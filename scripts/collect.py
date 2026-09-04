@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-PrintVerse 热销款采集脚本
+PrintVerse 热销款采集脚本 v2
 通过Apify API采集Temu/Shein/Etsy三平台POD热销商品
+优化：Temu重试机制、放宽过滤、增加关键词、详细日志
 """
 import os
 import sys
@@ -17,36 +18,37 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 RAW_DIR = DATA_DIR / "raw"
 IMAGES_DIR = DATA_DIR / "images"
 
-# Apify Actors
+# Apify Actors（主选+备选）
 ACTORS = {
     "temu": "amit123~temu-products-scraper",
     "shein": "shahidirfan~shein-product-scraper",
     "etsy": "yumitori~etsy-listings-scraper",
 }
 
-# POD热门关键词
-POD_KEYWORDS = [
-    "graphic tee",
-    "vintage t shirt design",
-    "funny slogan shirt",
-    "retro animal print",
-    "floral sublimation design",
-    "quote shirt aesthetic",
-    "boho minimalist tee",
-    "western country shirt",
-    "halloween spooky design",
-    "christmas holiday tee",
+# POD热门关键词（按平台优化）
+TEMU_KEYWORDS = [
+    "graphic tee", "t shirt", "vintage t shirt", "funny shirt", "hoodie",
+]
+SHEIN_KEYWORDS = [
+    "graphic t shirt", "oversized tee", "vintage shirt", "print tee", "hoodie",
+]
+ETSY_KEYWORDS = [
+    "graphic tee png", "t shirt design", "sublimation design", "shirt png", "retro shirt",
 ]
 
-# 每平台采集量
-LIMITS = {
-    "temu": 20,
+# 每平台每关键词采集量
+PER_KEYWORD_LIMIT = {
+    "temu": 8,
     "shein": 5,
     "etsy": 5,
 }
 
-# POD相关关键词过滤
-POD_FILTER = ["shirt", "tee", "t-shirt", "tshirt", "hoodie", "sweatshirt", "print", "graphic", "sublimation", "png", "design"]
+# 放宽过滤：只要包含服装相关词就保留（不过度过滤）
+POD_FILTER = [
+    "shirt", "tee", "t-shirt", "tshirt", "hoodie", "sweatshirt", "top",
+    "print", "graphic", "sublimation", "png", "design", "tee shirt",
+    "casual", "short sleeve", "long sleeve", "crew neck", "v neck",
+]
 
 
 def ensure_dirs():
@@ -54,20 +56,20 @@ def ensure_dirs():
         d.mkdir(parents=True, exist_ok=True)
 
 
-def apify_request(method, path, data=None):
+def apify_request(method, path, data=None, timeout=30):
     """发送Apify API请求"""
     url = f"https://api.apify.com/v2{path}?token={APIFY_TOKEN}"
     headers = {"Content-Type": "application/json"}
     if method == "POST":
-        resp = requests.post(url, json=data, headers=headers, timeout=30)
+        resp = requests.post(url, json=data, headers=headers, timeout=timeout)
     else:
-        resp = requests.get(url, headers=headers, timeout=30)
+        resp = requests.get(url, headers=headers, timeout=timeout)
     resp.raise_for_status()
     return resp.json()
 
 
-def run_actor(platform, keyword, max_items):
-    """启动Apify Actor并等待完成"""
+def run_actor(platform, keyword, max_items, max_retries=3):
+    """启动Apify Actor并等待完成，支持重试"""
     actor_id = ACTORS[platform]
 
     # 构建输入
@@ -89,41 +91,60 @@ def run_actor(platform, keyword, max_items):
     else:
         return []
 
-    print(f"  启动 {platform} 采集: keyword='{keyword}', max={max_items}")
+    for attempt in range(max_retries):
+        try:
+            print(f"  [尝试 {attempt+1}/{max_retries}] 启动 {platform} 采集: keyword='{keyword}', max={max_items}")
 
-    # 启动运行
-    result = apify_request("POST", f"/acts/{actor_id}/runs", run_input)
-    run_id = result["data"]["id"]
-    print(f"  Run ID: {run_id}")
+            # 启动运行
+            result = apify_request("POST", f"/acts/{actor_id}/runs", run_input)
+            run_id = result["data"]["id"]
+            print(f"  Run ID: {run_id}")
 
-    # 等待完成（最多5分钟）
-    for i in range(60):
-        time.sleep(5)
-        status = apify_request("GET", f"/actor-runs/{run_id}")
-        state = status["data"]["status"]
-        if state in ["SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED"]:
-            print(f"  状态: {state} (耗时 {status['data'].get('stats',{}).get('durationMillis',0)/1000:.1f}s)")
-            break
-        if i % 6 == 0:
-            print(f"  等待中... ({state})")
-    else:
-        print(f"  超时，跳过")
-        return []
+            # 等待完成（最多4分钟）
+            for i in range(48):
+                time.sleep(5)
+                status = apify_request("GET", f"/actor-runs/{run_id}")
+                state = status["data"]["status"]
+                if state in ["SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED"]:
+                    duration = status["data"].get("stats", {}).get("durationMillis", 0) / 1000
+                    print(f"  状态: {state} (耗时 {duration:.1f}s)")
+                    break
+                if i % 6 == 0:
+                    print(f"  等待中... ({state})")
+            else:
+                print(f"  超时，跳过")
+                continue
 
-    if state != "SUCCEEDED":
-        print(f"  运行失败: {state}")
-        return []
+            if state != "SUCCEEDED":
+                print(f"  运行失败: {state}")
+                if attempt < max_retries - 1:
+                    print(f"  5秒后重试...")
+                    time.sleep(5)
+                continue
 
-    # 获取数据集
-    dataset_id = status["data"]["defaultDatasetId"]
-    items = apify_request("GET", f"/datasets/{dataset_id}/items")
-    print(f"  获取到 {len(items)} 条数据")
-    return items
+            # 获取数据集
+            dataset_id = status["data"]["defaultDatasetId"]
+            items = apify_request("GET", f"/datasets/{dataset_id}/items")
+            print(f"  获取到 {len(items)} 条原始数据")
+            return items
+
+        except Exception as e:
+            print(f"  采集异常: {e}")
+            if attempt < max_retries - 1:
+                print(f"  5秒后重试...")
+                time.sleep(5)
+            continue
+
+    print(f"  {platform} 采集失败（已重试{max_retries}次）")
+    return []
 
 
 def is_pod_product(title):
-    """判断是否为POD相关商品"""
+    """判断是否为POD相关商品（放宽过滤）"""
+    if not title:
+        return False
     title_lower = title.lower()
+    # 只要包含任意服装/印花相关词就保留
     return any(kw in title_lower for kw in POD_FILTER)
 
 
@@ -132,23 +153,23 @@ def normalize_item(platform, item, keyword):
     if platform == "temu":
         return {
             "platform": "temu",
-            "title": item.get("title", ""),
-            "price": item.get("price_info", {}).get("price", ""),
-            "image": item.get("image", {}).get("url", ""),
-            "url": item.get("link_url", ""),
-            "sales_tip": item.get("sales_tip", ""),
-            "comment": item.get("comment", ""),
+            "title": item.get("title", "") or item.get("goods_name", ""),
+            "price": item.get("price_info", {}).get("price", "") or item.get("price", ""),
+            "image": item.get("image", {}).get("url", "") or item.get("image", ""),
+            "url": item.get("link_url", "") or item.get("url", ""),
+            "sales_tip": item.get("sales_tip", "") or item.get("sales", ""),
+            "comment": item.get("comment", "") or item.get("comment_count", ""),
             "keyword": keyword,
         }
     elif platform == "shein":
         return {
             "platform": "shein",
-            "title": item.get("goods_name", ""),
-            "price": item.get("salePrice", {}).get("amountWithSymbol", ""),
-            "image": item.get("goods_img", ""),
-            "url": item.get("链接", ""),
-            "sales_tip": "",
-            "comment": "",
+            "title": item.get("goods_name", "") or item.get("title", ""),
+            "price": item.get("salePrice", {}).get("amountWithSymbol", "") or item.get("price", ""),
+            "image": item.get("goods_img", "") or item.get("image", ""),
+            "url": item.get("链接", "") or item.get("url", "") or item.get("goods_url", ""),
+            "sales_tip": item.get("sales_tip", "") or "",
+            "comment": item.get("comment", "") or "",
             "keyword": keyword,
         }
     elif platform == "etsy":
@@ -157,7 +178,7 @@ def normalize_item(platform, item, keyword):
             "title": item.get("title", ""),
             "price": item.get("price", ""),
             "image": item.get("image", ""),
-            "url": item.get("listingUrl", ""),
+            "url": item.get("listingUrl", "") or item.get("url", ""),
             "sales_tip": "",
             "comment": "",
             "keyword": keyword,
@@ -179,6 +200,41 @@ def download_image(url, save_path):
         return False
 
 
+def collect_platform(platform, keywords):
+    """采集单个平台"""
+    all_items = []
+    per_kw = PER_KEYWORD_LIMIT[platform]
+
+    print(f"\n{'='*50}")
+    print(f"开始采集 {platform.upper()}")
+    print(f"关键词: {keywords}")
+    print(f"每关键词目标: {per_kw} 条")
+    print(f"{'='*50}")
+
+    for keyword in keywords:
+        items = run_actor(platform, keyword, per_kw)
+        normalized = []
+        for item in items:
+            n = normalize_item(platform, item, keyword)
+            if n.get("title"):
+                normalized.append(n)
+        print(f"  标准化后: {len(normalized)} 条（过滤前）")
+
+        # 过滤POD相关
+        filtered = [n for n in normalized if is_pod_product(n["title"])]
+        print(f"  POD过滤后: {len(filtered)} 条")
+        all_items.extend(filtered)
+
+    # 保存原始数据
+    today = datetime.now().strftime("%Y-%m-%d")
+    raw_file = RAW_DIR / f"{platform}_{today}.json"
+    with open(raw_file, "w", encoding="utf-8") as f:
+        json.dump(all_items, f, ensure_ascii=False, indent=2)
+    print(f"\n{platform.upper()} 采集完成: {len(all_items)} 条，已保存到 {raw_file}")
+
+    return all_items
+
+
 def main():
     ensure_dirs()
 
@@ -187,53 +243,41 @@ def main():
         sys.exit(1)
 
     today = datetime.now().strftime("%Y-%m-%d")
-    print(f"=== PrintVerse 采集任务 {today} ===")
+    print(f"{'='*60}")
+    print(f"PrintVerse 采集任务 v2 - {today}")
     print(f"Token: {APIFY_TOKEN[:10]}...")
+    print(f"{'='*60}")
 
     all_products = []
 
-    for platform in ["temu", "shein", "etsy"]:
-        limit = LIMITS[platform]
-        # 每个平台用前2个关键词采集，分摊数量
-        keywords = POD_KEYWORDS[:2]
-        per_kw = max(1, limit // len(keywords))
-
-        print(f"\n--- {platform.upper()} (目标 {limit} 条) ---")
-
-        for keyword in keywords:
-            try:
-                items = run_actor(platform, keyword, per_kw)
-                for item in items:
-                    normalized = normalize_item(platform, item, keyword)
-                    if normalized.get("title") and is_pod_product(normalized["title"]):
-                        all_products.append(normalized)
-            except Exception as e:
-                print(f"  采集异常: {e}")
-                continue
-
-        # 保存原始数据
-        raw_file = RAW_DIR / f"{platform}_{today}.json"
-        with open(raw_file, "w", encoding="utf-8") as f:
-            json.dump([p for p in all_products if p["platform"] == platform], f, ensure_ascii=False, indent=2)
-        print(f"  已保存原始数据: {raw_file}")
+    # 采集各平台
+    all_products.extend(collect_platform("temu", TEMU_KEYWORDS))
+    all_products.extend(collect_platform("shein", SHEIN_KEYWORDS))
+    all_products.extend(collect_platform("etsy", ETSY_KEYWORDS))
 
     # 去重（按标题）
     seen_titles = set()
     unique_products = []
     for p in all_products:
-        if p["title"] not in seen_titles:
-            seen_titles.add(p["title"])
+        title_key = p["title"].strip().lower()
+        if title_key and title_key not in seen_titles:
+            seen_titles.add(title_key)
             unique_products.append(p)
 
-    print(f"\n=== 采集汇总 ===")
-    print(f"总采集: {len(all_products)} 条")
+    print(f"\n{'='*60}")
+    print(f"采集汇总")
+    print(f"{'='*60}")
+    print(f"总采集（过滤后）: {len(all_products)} 条")
     print(f"去重后: {len(unique_products)} 条")
     for platform in ["temu", "shein", "etsy"]:
         count = len([p for p in unique_products if p["platform"] == platform])
         print(f"  {platform}: {count} 条")
 
     # 下载图片
-    print(f"\n--- 下载商品图片 ---")
+    print(f"\n{'='*60}")
+    print(f"下载商品图片")
+    print(f"{'='*60}")
+    success_count = 0
     for i, product in enumerate(unique_products):
         if product.get("image"):
             img_ext = ".jpg"
@@ -245,27 +289,42 @@ def main():
                 print(f"  [{i+1}/{len(unique_products)}] 下载: {product['title'][:40]}...")
                 if download_image(product["image"], img_path):
                     product["local_image"] = f"data/images/{img_name}"
+                    success_count += 1
             else:
                 product["local_image"] = f"data/images/{img_name}"
+                success_count += 1
+
+    print(f"图片下载成功: {success_count}/{len(unique_products)}")
 
     # 保存汇总数据
     products_file = DATA_DIR / "products.json"
     output = {
         "updated_at": datetime.now().isoformat(),
         "total": len(unique_products),
+        "by_platform": {
+            "temu": len([p for p in unique_products if p["platform"] == "temu"]),
+            "shein": len([p for p in unique_products if p["platform"] == "shein"]),
+            "etsy": len([p for p in unique_products if p["platform"] == "etsy"]),
+        },
         "products": unique_products,
     }
     with open(products_file, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
     print(f"\n汇总数据已保存: {products_file}")
 
-    # 输出统计供GitHub Actions读取
-    print(f"\n::set-output name=total::{len(unique_products)}")
-    print(f"::set-output name=temu::{len([p for p in unique_products if p['platform']=='temu'])}")
-    print(f"::set-output name=shein::{len([p for p in unique_products if p['platform']=='shein'])}")
-    print(f"::set-output name=etsy::{len([p for p in unique_products if p['platform']=='etsy'])}")
+    # GitHub Actions输出（使用新的Environment Files语法）
+    github_output = os.environ.get("GITHUB_OUTPUT", "")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write(f"total={len(unique_products)}\n")
+            f.write(f"temu={output['by_platform']['temu']}\n")
+            f.write(f"shein={output['by_platform']['shein']}\n")
+            f.write(f"etsy={output['by_platform']['etsy']}\n")
+        print("已写入GitHub Actions输出")
 
-    print("\n=== 采集完成 ===")
+    print(f"\n{'='*60}")
+    print(f"采集完成！")
+    print(f"{'='*60}")
 
 
 if __name__ == "__main__":
