@@ -25,23 +25,23 @@ ACTORS = {
     "etsy": "yumitori~etsy-listings-scraper",
 }
 
-# POD热门关键词（按平台优化）
-TEMU_KEYWORDS = [
-    "graphic tee", "t shirt", "vintage t shirt", "funny shirt", "hoodie",
-]
-SHEIN_KEYWORDS = [
-    "graphic t shirt", "oversized tee", "vintage shirt", "print tee", "hoodie",
-]
-ETSY_KEYWORDS = [
-    "graphic tee png", "t shirt design", "sublimation design", "shirt png", "retro shirt",
-]
+# 测试模式控制（测试期间用小数据量节省额度，正式运行时设为false）
+TEST_MODE = os.environ.get("TEST_MODE", "true").lower() == "true"
 
-# 每平台每关键词采集量
-PER_KEYWORD_LIMIT = {
-    "temu": 8,
-    "shein": 5,
-    "etsy": 5,
-}
+# POD热门关键词（按平台优化）
+if TEST_MODE:
+    # 测试模式：最小数据量，总计约20条，成本约$0.003/次
+    TEMU_KEYWORDS = ["graphic tee", "t shirt"]
+    SHEIN_KEYWORDS = ["graphic t shirt"]
+    ETSY_KEYWORDS = ["graphic tee png"]
+    PER_KEYWORD_LIMIT = {"temu": 5, "shein": 5, "etsy": 5}
+    print(f"[测试模式] 数据量已限制：Temu{len(TEMU_KEYWORDS)}词×5, Shein{len(SHEIN_KEYWORDS)}词×5, Etsy{len(ETSY_KEYWORDS)}词×5")
+else:
+    # 正式模式：完整数据量
+    TEMU_KEYWORDS = ["graphic tee", "t shirt", "vintage t shirt", "funny shirt", "hoodie"]
+    SHEIN_KEYWORDS = ["graphic t shirt", "oversized tee", "vintage shirt", "print tee", "hoodie"]
+    ETSY_KEYWORDS = ["graphic tee png", "t shirt design", "sublimation design", "shirt png", "retro shirt"]
+    PER_KEYWORD_LIMIT = {"temu": 8, "shein": 5, "etsy": 5}
 
 # 放宽过滤：只要包含服装相关词就保留（不过度过滤）
 POD_FILTER = [
@@ -68,7 +68,7 @@ def apify_request(method, path, data=None, timeout=30):
     return resp.json()
 
 
-def run_actor(platform, keyword, max_items, max_retries=3):
+def run_actor(platform, keyword, max_items, max_retries=2):
     """启动Apify Actor并等待完成，支持重试"""
     actor_id = ACTORS[platform]
 
