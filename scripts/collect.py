@@ -30,12 +30,12 @@ TEST_MODE = os.environ.get("TEST_MODE", "true").lower() == "true"
 
 # POD热门关键词（按平台优化）
 if TEST_MODE:
-    # 测试模式：最小数据量，总计约20条，成本约$0.003/次
-    TEMU_KEYWORDS = ["graphic tee", "t shirt"]
+    # 测试模式：极致省，每平台1关键词×3条，总计9条，成本约$0.001/次
+    TEMU_KEYWORDS = ["graphic tee"]
     SHEIN_KEYWORDS = ["graphic t shirt"]
     ETSY_KEYWORDS = ["graphic tee png"]
-    PER_KEYWORD_LIMIT = {"temu": 5, "shein": 5, "etsy": 5}
-    print(f"[测试模式] 数据量已限制：Temu{len(TEMU_KEYWORDS)}词×5, Shein{len(SHEIN_KEYWORDS)}词×5, Etsy{len(ETSY_KEYWORDS)}词×5")
+    PER_KEYWORD_LIMIT = {"temu": 3, "shein": 3, "etsy": 3}
+    print(f"[测试模式-极致省] Temu 1词×3, Shein 1词×3, Etsy 1词×3, 总计9条")
 else:
     # 正式模式：完整数据量
     TEMU_KEYWORDS = ["graphic tee", "t shirt", "vintage t shirt", "funny shirt", "hoodie"]
