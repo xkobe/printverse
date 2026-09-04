@@ -38,16 +38,14 @@ jobs:
         env:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
           TEST_MODE: ${{ github.event.inputs.test_mode || 'true' }}
-        run: |
-          python scripts/collect.py
+        run: python scripts/collect.py
 
       - name: Run variant generation
         env:
           AI_IMAGE_API_KEY: ${{ secrets.AI_IMAGE_API_KEY }}
           AI_IMAGE_API_ENDPOINT: ${{ secrets.AI_IMAGE_API_ENDPOINT }}
           AI_IMAGE_API_PROVIDER: ${{ secrets.AI_IMAGE_API_PROVIDER }}
-        run: |
-          python scripts/generate_variant.py
+        run: python scripts/generate_variant.py
 
       - name: Commit and push results
         run: |

@@ -20,9 +20,9 @@ IMAGES_DIR = DATA_DIR / "images"
 
 # Apify Actors（主选+备选）
 ACTORS = {
-    "temu": "amit123~temu-products-scraper",
-    "shein": "shahidirfan~shein-product-scraper",
-    "etsy": "yumitori~etsy-listings-scraper",
+    "temu": ["amit123~temu-products-scraper", "webscraping~temu-scraper"],
+    "shein": ["shahidirfan~shein-product-scraper"],
+    "etsy": ["yumitori~etsy-listings-scraper"],
 }
 
 # 测试模式控制（测试期间用小数据量节省额度，正式运行时设为false）
@@ -69,8 +69,8 @@ def apify_request(method, path, data=None, timeout=30):
 
 
 def run_actor(platform, keyword, max_items, max_retries=2):
-    """启动Apify Actor并等待完成，支持重试"""
-    actor_id = ACTORS[platform]
+    """启动Apify Actor并等待完成，支持重试和备选actor"""
+    actor_list = ACTORS[platform]
 
     # 构建输入
     if platform == "temu":
@@ -91,51 +91,62 @@ def run_actor(platform, keyword, max_items, max_retries=2):
     else:
         return []
 
-    for attempt in range(max_retries):
-        try:
-            print(f"  [尝试 {attempt+1}/{max_retries}] 启动 {platform} 采集: keyword='{keyword}', max={max_items}")
+    for actor_idx, actor_id in enumerate(actor_list):
+        for attempt in range(max_retries):
+            try:
+                print(f"  [Actor {actor_idx+1}/{len(actor_list)}, 尝试 {attempt+1}/{max_retries}] {platform}: keyword='{keyword}', max={max_items}")
 
-            # 启动运行
-            result = apify_request("POST", f"/acts/{actor_id}/runs", run_input)
-            run_id = result["data"]["id"]
-            print(f"  Run ID: {run_id}")
+                # 启动运行
+                result = apify_request("POST", f"/acts/{actor_id}/runs", run_input)
+                run_id = result["data"]["id"]
+                print(f"  Run ID: {run_id} (actor: {actor_id})")
 
-            # 等待完成（最多4分钟）
-            for i in range(48):
-                time.sleep(5)
-                status = apify_request("GET", f"/actor-runs/{run_id}")
-                state = status["data"]["status"]
-                if state in ["SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED"]:
-                    duration = status["data"].get("stats", {}).get("durationMillis", 0) / 1000
-                    print(f"  状态: {state} (耗时 {duration:.1f}s)")
-                    break
-                if i % 6 == 0:
-                    print(f"  等待中... ({state})")
-            else:
-                print(f"  超时，跳过")
-                continue
+                # 等待完成（最多4分钟）
+                for i in range(48):
+                    time.sleep(5)
+                    status = apify_request("GET", f"/actor-runs/{run_id}")
+                    state = status["data"]["status"]
+                    if state in ["SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED"]:
+                        duration = status["data"].get("stats", {}).get("durationMillis", 0) / 1000
+                        print(f"  状态: {state} (耗时 {duration:.1f}s)")
+                        break
+                    if i % 6 == 0:
+                        print(f"  等待中... ({state})")
+                else:
+                    print(f"  超时，跳过")
+                    continue
 
-            if state != "SUCCEEDED":
-                print(f"  运行失败: {state}")
+                if state != "SUCCEEDED":
+                    print(f"  运行失败: {state}")
+                    if attempt < max_retries - 1:
+                        print(f"  5秒后重试...")
+                        time.sleep(5)
+                    continue
+
+                # 获取数据集
+                dataset_id = status["data"]["defaultDatasetId"]
+                items = apify_request("GET", f"/datasets/{dataset_id}/items")
+                print(f"  获取到 {len(items)} 条原始数据")
+
+                # 手动截断（部分actor不遵守maxItems参数）
+                if len(items) > max_items:
+                    items = items[:max_items]
+                    print(f"  截断到 {max_items} 条")
+
+                if items:
+                    return items
+                else:
+                    print(f"  ⚠️ 数据集为空，尝试下一个actor")
+                    break  # 跳出重试循环，试下一个actor
+
+            except Exception as e:
+                print(f"  采集异常: {type(e).__name__}: {e}")
                 if attempt < max_retries - 1:
                     print(f"  5秒后重试...")
                     time.sleep(5)
                 continue
 
-            # 获取数据集
-            dataset_id = status["data"]["defaultDatasetId"]
-            items = apify_request("GET", f"/datasets/{dataset_id}/items")
-            print(f"  获取到 {len(items)} 条原始数据")
-            return items
-
-        except Exception as e:
-            print(f"  采集异常: {e}")
-            if attempt < max_retries - 1:
-                print(f"  5秒后重试...")
-                time.sleep(5)
-            continue
-
-    print(f"  {platform} 采集失败（已重试{max_retries}次）")
+    print(f"  {platform} 采集失败（已尝试所有actor）")
     return []
 
 
@@ -272,6 +283,13 @@ def main():
     for platform in ["temu", "shein", "etsy"]:
         count = len([p for p in unique_products if p["platform"] == platform])
         print(f"  {platform}: {count} 条")
+
+    # 全平台0条时警告并返回错误码
+    if len(unique_products) == 0:
+        print("\n⚠️ 警告：所有平台均未采集到数据！")
+        print("可能原因：网络问题、Apify额度耗尽、目标平台反爬")
+        print("请检查上方日志中各平台的详细错误信息")
+        sys.exit(2)
 
     # 下载图片
     print(f"\n{'='*60}")
