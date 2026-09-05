@@ -748,6 +748,7 @@ async function refreshCollectData(){
   toast('正在从GitHub拉取最新采集数据...');
   await loadProductsData(true);
   toast('数据已刷新，共'+(PRODUCTS_DATA?PRODUCTS_DATA.total:0)+'条');
+}
 
 // GitHub API 配置与触发
 function getGithubToken(){ return localStorage.getItem('printhunt_gh_token') || ''; }
@@ -818,7 +819,6 @@ async function triggerCollectWorkflow(){
       toast('❌ 触发失败: '+(err.message || resp.status));
     }
   }catch(e){ toast('❌ 网络错误: '+e.message); }
-}
 }
 function productsToCollectItems(data){
   if(!data || !data.products) return COLLECT_ITEMS;
