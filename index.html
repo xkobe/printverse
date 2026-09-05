@@ -237,8 +237,6 @@ ul{list-style:none}
 .asset-thumb 
 .asset-thumb 
 
-.asset-body{padding:12px 14px}
-
 /* 印花图案 */
 
 /* ===== 素材详情页 ===== */
@@ -470,12 +468,12 @@ body.admin-mode{background:#f0f2f5;}
 .admin-login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);padding:20px;}
 .admin-login-box{background:var(--bg);border-radius:var(--radius-xl);padding:40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .admin-login-box h2{margin:0 0 8px;font-size:var(--font-xl);font-weight:800;color:var(--text-1);}
-.admin-login-box p{margin:0 0 24px;font-size:var(--font-base);color:#888;}
-.admin-login-box input{width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:var(--radius);font-size:var(--font-base);box-sizing:border-box;margin-bottom:12px;outline:none;transition:border-color .2s;}
+.admin-login-box p{margin:0 0 24px;font-size:var(--font-base);color:var(--text-3);}
+.admin-login-box input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:var(--font-base);box-sizing:border-box;margin-bottom:12px;outline:none;transition:border-color .2s;}
 .admin-login-box input:focus{border-color:var(--primary);}
 .admin-login-box button{width:100%;padding:12px;background:var(--primary);color:var(--bg);border:none;border-radius:var(--radius);font-size:var(--font-md);font-weight:600;cursor:pointer;transition:background .2s;}
 .admin-login-box button:hover{background:var(--primary-dark);}
-.admin-login-back{display:block;text-align:center;margin-top:16px;font-size:var(--font-sm);color:#999;cursor:pointer;text-decoration:none;}
+.admin-login-back{display:block;text-align:center;margin-top:16px;font-size:var(--font-sm);color:var(--text-3);cursor:pointer;text-decoration:none;}
 .admin-login-back:hover{color:var(--primary);}
 
 /* ===== 工具类（从内联style抽离） ===== */
@@ -487,11 +485,11 @@ body.admin-mode{background:#f0f2f5;}
 .hint-text{font-size:var(--font-xs);color:var(--text-3)}
 .hint-text-top{font-size:var(--font-xs);color:var(--text-3);margin-top:4px}
 .hint-text-bottom{font-size:var(--font-xs);color:var(--text-3);margin-bottom:4px}
-.gray-box{background:#f5f5f5;border-radius:var(--radius);padding:16px}
-.gray-tag{background:#f5f5f5;border-radius:var(--radius-xs);padding:2px 6px;font-size:var(--font-xs)}
+.gray-box{background:var(--border-light);border-radius:var(--radius);padding:16px}
+.gray-tag{background:var(--border-light);border-radius:var(--radius-xs);padding:2px 6px;font-size:var(--font-xs)}
 .text-primary-bold{color:var(--primary);font-weight:700}
 .text-accent-bold{color:var(--accent);font-weight:600}
-.text-success-bold{color:var(--success);font-weight:600}
+
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .section-title{font-size:var(--font-lg);font-weight:700}
 .card-pad{padding:24px 32px;min-height:220px;display:flex;flex-direction:column}
@@ -697,6 +695,8 @@ async function refreshCollectData(){
 }
 
 // GitHub API 配置与触发
+
+/* ===== GitHub API集成 ===== */
 function getGithubToken(){ return localStorage.getItem('printhunt_gh_token') || ''; }
 function saveGithubToken(){
   const input = document.getElementById('gh-token-input');
@@ -787,6 +787,8 @@ function productsToCollectItems(data){
 }
 
 // 管理员权限（独立于前端用户）
+
+/* ===== 权限与认证 ===== */
 function isAdminLoggedIn(){ return localStorage.getItem('printhunt_admin_auth') === '1'; }
 function adminLogin(pwd){
   // 原型阶段：固定密码 admin123，生产环境应改为后端验证
@@ -880,8 +882,8 @@ function printInner(asset){
   if(asset.pattern==='mountain')return `<svg width="85%" height="70%" viewBox="0 0 100 60"><polygon points="0,60 30,15 50,40 70,10 100,60" fill="rgba(255,255,255,.85)"/><polygon points="30,15 38,25 22,25" fill="#fff"/></svg>`;
   if(asset.pattern==='pumpkin')return `<div style="width:60%;height:60%;background:#E67E22;border-radius:50%;position:relative;"><div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:6px;height:10px;background:#27AE60;border-radius:2px;"></div></div>`;
   if(asset.pattern==='wave')return `<svg width="90%" height="60%" viewBox="0 0 100 40"><path d="M0,20 Q25,5 50,20 T100,20 L100,40 L0,40 Z" fill="rgba(255,255,255,.6)"/><path d="M0,28 Q25,13 50,28 T100,28 L100,40 L0,40 Z" fill="rgba(255,255,255,.4)"/></svg>`;
-  if(asset.pattern==='skull')return `<div style="width:50%;height:55%;background:rgba(255,255,255,.9);border-radius:40% 40% 30% 30%;position:relative;"><div style="position:absolute;top:35%;left:20%;width:20%;height:20%;background:#2D3436;border-radius:50%;"></div><div style="position:absolute;top:35%;right:20%;width:20%;height:20%;background:#2D3436;border-radius:50%;"></div></div>`;
-  if(asset.pattern==='panda')return `<div style="width:55%;height:55%;background:#fff;border-radius:50%;position:relative;"><div style="position:absolute;top:-5%;left:5%;width:25%;height:25%;background:#2D3436;border-radius:50%;"></div><div style="position:absolute;top:-5%;right:5%;width:25%;height:25%;background:#2D3436;border-radius:50%;"></div><div style="position:absolute;top:40%;left:25%;width:15%;height:15%;background:#2D3436;border-radius:50%;"></div><div style="position:absolute;top:40%;right:25%;width:15%;height:15%;background:#2D3436;border-radius:50%;"></div></div>`;
+  if(asset.pattern==='skull')return `<div style="width:50%;height:55%;background:rgba(255,255,255,.9);border-radius:40% 40% 30% 30%;position:relative;"><div style="position:absolute;top:35%;left:20%;width:20%;height:20%;background:var(--text-1);border-radius:50%;"></div><div style="position:absolute;top:35%;right:20%;width:20%;height:20%;background:var(--text-1);border-radius:50%;"></div></div>`;
+  if(asset.pattern==='panda')return `<div style="width:55%;height:55%;background:#fff;border-radius:50%;position:relative;"><div style="position:absolute;top:-5%;left:5%;width:25%;height:25%;background:var(--text-1);border-radius:50%;"></div><div style="position:absolute;top:-5%;right:5%;width:25%;height:25%;background:var(--text-1);border-radius:50%;"></div><div style="position:absolute;top:40%;left:25%;width:15%;height:15%;background:var(--text-1);border-radius:50%;"></div><div style="position:absolute;top:40%;right:25%;width:15%;height:15%;background:var(--text-1);border-radius:50%;"></div></div>`;
   if(asset.pattern==='floral')return `<svg width="70%" height="70%" viewBox="0 0 60 60"><circle cx="30" cy="30" r="8" fill="#fff"/><circle cx="30" cy="18" r="7" fill="rgba(255,255,255,.7)"/><circle cx="30" cy="42" r="7" fill="rgba(255,255,255,.7)"/><circle cx="18" cy="30" r="7" fill="rgba(255,255,255,.7)"/><circle cx="42" cy="30" r="7" fill="rgba(255,255,255,.7)"/></svg>`;
   if(asset.pattern==='pixel')return `<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;width:70%;height:70%;">${Array.from({length:36},()=>`<div style="background:${Math.random()>0.5?'rgba(255,255,255,.9)':'transparent'};border-radius:1px;"></div>`).join('')}</div>`;
   return `<div style="font-weight:900;letter-spacing:1px;font-size:10px">PRINT</div>`;
@@ -955,14 +957,14 @@ function assetCard(a){
       </div>
     </div>
     <div style="padding:12px 14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:6px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${a.title}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:6px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${a.title}</div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:11px;color:#999">
+        <div style="font-size:11px;color:var(--text-3)">
           <span class="link-primary" onclick="event.stopPropagation();STATE.filter.style='${a.style}';navigate('home')">${a.style}</span>
-          <span style="margin:0 4px;color:#ccc">·</span>
+          <span style="margin:0 4px;color:var(--border)">·</span>
           <span>${dl}次下载</span>
         </div>
-        <div style="font-size:12px;font-weight:700;${isFree?'color:#52c41a':'color:#FB5454'}">${isFree?'免费':a.cost+'点'}</div>
+        <div style="font-size:12px;font-weight:700;${isFree?'color:var(--success)':'color:#FB5454'}">${isFree?'免费':a.cost+'点'}</div>
       </div>
     </div>
   </div>`;
@@ -976,7 +978,7 @@ function assetCard(a,opts={}){
   const btnText=isFree?'免费下载 PNG →':`${a.cost}点下载 PNG →`;
   return `<div style="cursor:pointer;margin-bottom:16px;break-inside:avoid" onclick="navigate('detail',{id:${a.id}})">
     <div style="position:relative;overflow:hidden;border-radius:6px">
-      ${isFree?`<span style="position:absolute;top:8px;left:8px;background:#52c41a;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;z-index:2">免费</span>`:`<span style="position:absolute;top:8px;left:8px;background:#FB5454;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;z-index:2">${a.cost}点</span>`}
+      ${isFree?`<span style="position:absolute;top:8px;left:8px;background:var(--success);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;z-index:2">免费</span>`:`<span style="position:absolute;top:8px;left:8px;background:#FB5454;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;z-index:2">${a.cost}点</span>`}
       <span style="position:absolute;top:8px;${isFree?'left:52px':'left:52px'};background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;z-index:2">${hot.period}#${hot.rank}</span>
       <div class="fav-btn" style="position:absolute;top:8px;right:8px;width:26px;height:26px;background:rgba(255,255,255,.95);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;z-index:3;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer" onclick="event.stopPropagation();const s=this.querySelector('svg');s.setAttribute('fill',s.getAttribute('fill')==='#ff4757'?'none':'#ff4757');s.setAttribute('stroke',s.getAttribute('stroke')==='#ff4757'?'#666':'#ff4757')" title="收藏此图案">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -988,16 +990,16 @@ function assetCard(a,opts={}){
           <div style="font-weight:700;margin-bottom:1px">🔥 7天销${hot.sales7d}件</div>
           <div style="opacity:.8">${a.platform}·${hot.period}#${hot.rank}</div>
         </div>
-        <div style="background:#52c41a;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap">${hot.trend}</div>
+        <div style="background:var(--success);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap">${hot.trend}</div>
       </div>
     </div>
     <div style="padding:6px 2px 0">
-      <div style="font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:2px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="点击查看详情">${a.title}</div>
-      <div style="font-size:10px;color:#999;display:flex;align-items:center;flex-wrap:wrap;gap:2px">
+      <div style="font-size:12px;font-weight:600;color:var(--text-1);margin-bottom:2px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="点击查看详情">${a.title}</div>
+      <div style="font-size:10px;color:var(--text-3);display:flex;align-items:center;flex-wrap:wrap;gap:2px">
         <span class="link-primary" onclick="event.stopPropagation();STATE.filter.style='${a.style}';render()">${a.style}</span>
-        <span style="color:#ccc">·</span>
+        <span style="color:var(--border)">·</span>
         <span style="color:#FB5454;cursor:pointer" onclick="event.stopPropagation();STATE.filter.platform='${a.platform}';render()">${a.platform}</span>
-        <span style="color:#ccc">·</span>
+        <span style="color:var(--border)">·</span>
         <span>${dl}下载</span>
       </div>
     </div>
@@ -1099,6 +1101,8 @@ function setDateFilter(val){
 }
 
 /* ===== 首页（参考图布局：内容驱动型） ===== */
+
+/* ===== 页面渲染 ===== */
 function renderHome(){
   let feedSet=ASSETS.slice(0,20);
   if(STATE.filter.platform && STATE.filter.platform!=='all'){
@@ -1117,10 +1121,10 @@ function renderHome(){
   const freeSet=ASSETS.filter(a=>a.cost===0).slice(0,8);
   return `<div style="background:#fff;min-height:calc(100vh - 60px)">
     <!-- Hero区 -->
-    <div style="background:linear-gradient(180deg,#f8f9ff 0%,#fff 100%);border-bottom:1px solid #f0f0f0">
+    <div style="background:linear-gradient(180deg,#f8f9ff 0%,#fff 100%);border-bottom:1px solid var(--border-light)">
       <div style="max-width:1200px;margin:0 auto;padding:56px 24px 40px;text-align:center">
-        <h1 style="font-size:36px;font-weight:900;color:#1a1a1a;margin:0 0 12px;letter-spacing:-.5px;line-height:1.2">Temu / TikTok / Shein / Etsy <span style="color:#0175cc">热销款变体图案</span>，下载直接上架</h1>
-        <p style="font-size:17px;color:#666;margin:0 auto 32px;line-height:1.7;max-width:680px">每日追踪四大跨境平台热销榜，AI 反向提示词生成合规变体，300dpi 高清透明底 PNG，含 POD 商用授权，注册即可下载。</p>
+        <h1 style="font-size:36px;font-weight:900;color:var(--text-1);margin:0 0 12px;letter-spacing:-.5px;line-height:1.2">Temu / TikTok / Shein / Etsy <span style="color:#0175cc">热销款变体图案</span>，下载直接上架</h1>
+        <p style="font-size:17px;color:var(--text-2);margin:0 auto 32px;line-height:1.7;max-width:680px">每日追踪四大跨境平台热销榜，AI 反向提示词生成合规变体，300dpi 高清透明底 PNG，含 POD 商用授权，注册即可下载。</p>
         <div class="search-large" style="max-width:640px;margin:0 auto;box-shadow:0 6px 24px rgba(1,117,204,.18);border:2px solid #0175cc;height:56px;background:#fff;border-radius:28px;overflow:hidden">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#86909C" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input type="text" style="font-size:16px" placeholder="搜英文关键词，比如 vintage cat、coffee slogan、halloween..." value="${STATE.searchKeyword}" onkeyup="if(event.key==='Enter'){STATE.searchKeyword=this.value;navigate('home')}">
@@ -1128,8 +1132,8 @@ function renderHome(){
         </div>
         <div style="font-size:12px;color:#aaa;margin-top:10px">输入英文关键词，找到 Temu / Etsy / Shein / TikTok 正在热卖的印花</div>
         <div class="hot-keywords" style="margin-top:14px;justify-content:center;padding:0">
-          <span style="color:#999">热门搜索：</span>
-          ${['vintage sunset','dog mom','halloween pumpkin','coffee lover','mountain hiking'].map(k=>`<a style="color:#888;border-color:#e0e0e0;background:#fff;font-size:12px" onclick="STATE.searchKeyword='${k}';navigate('home')">${k}</a>`).join('')}
+          <span style="color:var(--text-3)">热门搜索：</span>
+          ${['vintage sunset','dog mom','halloween pumpkin','coffee lover','mountain hiking'].map(k=>`<a style="color:var(--text-3);border-color:var(--border);background:#fff;font-size:12px" onclick="STATE.searchKeyword='${k}';navigate('home')">${k}</a>`).join('')}
         </div>
         <!-- 3步上手引导 -->
         <div style="margin-top:36px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap">
@@ -1140,8 +1144,8 @@ function renderHome(){
           ].map(s=>`<div style="flex:1;min-width:220px;max-width:300px;background:#fff;border:1px solid #e8ecff;border-radius:12px;padding:20px;text-align:left;position:relative">
             <div style="position:absolute;top:14px;right:16px;font-size:28px;font-weight:900;color:#E6F2FB;line-height:1">${s.step}</div>
             <div style="font-size:24px;margin-bottom:8px">${s.icon}</div>
-            <div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:6px">${s.title}</div>
-            <div style="font-size:12px;color:#888;line-height:1.6">${s.desc}</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:6px">${s.title}</div>
+            <div style="font-size:12px;color:var(--text-3);line-height:1.6">${s.desc}</div>
           </div>`).join('')}
         </div>
       </div>
@@ -1151,28 +1155,28 @@ function renderHome(){
       <!-- 本周最新印花 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
         <div>
-          <h2 style="font-size:22px;font-weight:800;margin:0;color:#1a1a1a">今日热销变体图案</h2>
-          <p style="font-size:13px;color:#999;margin:4px 0 0">AI 反向提示词生成 · 避开侵权 · 下载直接上架你的 POD 店铺</p>
+          <h2 style="font-size:22px;font-weight:800;margin:0;color:var(--text-1)">今日热销变体图案</h2>
+          <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">AI 反向提示词生成 · 避开侵权 · 下载直接上架你的 POD 店铺</p>
         </div>
       </div>
       <!-- 平台+时间筛选 -->
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center" id="filterBar">
-        <span style="font-size:12px;color:#999;margin-right:4px">平台：</span>
+        <span style="font-size:12px;color:var(--text-3);margin-right:4px">平台：</span>
         ${['全部','Temu','TikTok','Shein','Etsy'].map((t,i)=>{
           const val=i===0?'all':t;
           const active=STATE.filter.platform===val;
-          return `<span style="padding:5px 12px;${active?'background:#0175cc;color:#fff':'background:#fff;color:#666;border:1px solid #e0e0e0'};border-radius:14px;font-size:12px;cursor:pointer;font-weight:${active?'600':'400'};transition:all .15s" onclick="setFilter('platform','${val}')">${t}</span>`;
+          return `<span style="padding:5px 12px;${active?'background:#0175cc;color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'};border-radius:14px;font-size:12px;cursor:pointer;font-weight:${active?'600':'400'};transition:all .15s" onclick="setFilter('platform','${val}')">${t}</span>`;
         }).join('')}
-        <span style="font-size:12px;color:#999;margin:0 4px 0 12px">周期：</span>
+        <span style="font-size:12px;color:var(--text-3);margin:0 4px 0 12px">周期：</span>
         ${['全部','日榜','周榜','月榜'].map((t,i)=>{
           const val=i===0?'all':['daily','weekly','monthly'][i-1];
           const active=STATE.filter.period===val;
-          return `<span style="padding:5px 12px;${active?'background:#FB5454;color:#fff':'background:#fff;color:#666;border:1px solid #e0e0e0'};border-radius:14px;font-size:12px;cursor:pointer;font-weight:${active?'600':'400'};transition:all .15s" onclick="setFilter('period','${val}')">${t}</span>`;
+          return `<span style="padding:5px 12px;${active?'background:#FB5454;color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'};border-radius:14px;font-size:12px;cursor:pointer;font-weight:${active?'600':'400'};transition:all .15s" onclick="setFilter('period','${val}')">${t}</span>`;
         }).join('')}
-        <span style="font-size:12px;color:#999;margin:0 4px 0 12px">更新日期：</span>
-        <input type="date" id="dateFilter" value="${STATE.filter.date||''}" style="padding:5px 10px;border:1px solid #e0e0e0;border-radius:14px;font-size:12px;color:#666;outline:none;cursor:pointer;background:#fff" onchange="setDateFilter(this.value)">
-        ${STATE.filter.date?`<span style="padding:5px 10px;background:#f5f5f5;color:#999;border:1px solid #e0e0e0;border-radius:14px;font-size:12px;cursor:pointer" onclick="setDateFilter('')">清除</span>`:''}
-        <span style="margin-left:auto;font-size:12px;color:#999" id="feedCount">共 ${feedSet.length} 款</span>
+        <span style="font-size:12px;color:var(--text-3);margin:0 4px 0 12px">更新日期：</span>
+        <input type="date" id="dateFilter" value="${STATE.filter.date||''}" style="padding:5px 10px;border:1px solid var(--border);border-radius:14px;font-size:12px;color:var(--text-2);outline:none;cursor:pointer;background:#fff" onchange="setDateFilter(this.value)">
+        ${STATE.filter.date?`<span style="padding:5px 10px;background:var(--border-light);color:var(--text-3);border:1px solid var(--border);border-radius:14px;font-size:12px;cursor:pointer" onclick="setDateFilter('')">清除</span>`:''}
+        <span style="margin-left:auto;font-size:12px;color:var(--text-3)" id="feedCount">共 ${feedSet.length} 款</span>
       </div>
       <!-- 瀑布流（纯图案，原图自然尺寸） -->
       <div id="assetFeed" style="column-count:4;column-gap:10px;margin-bottom:48px">
@@ -1181,8 +1185,8 @@ function renderHome(){
 
       <!-- 图案可以印在哪里（应用场景） -->
       <div style="margin-bottom:48px">
-        <h2 style="font-size:22px;font-weight:800;margin:0 0 6px;color:#1a1a1a">一张图案，多种产品通用</h2>
-        <p style="font-size:13px;color:#999;margin:0 0 20px">下载的透明底 PNG 可直接用于以下 POD 产品，无需二次处理</p>
+        <h2 style="font-size:22px;font-weight:800;margin:0 0 6px;color:var(--text-1)">一张图案，多种产品通用</h2>
+        <p style="font-size:13px;color:var(--text-3);margin:0 0 20px">下载的透明底 PNG 可直接用于以下 POD 产品，无需二次处理</p>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
           ${[
             {name:'T恤',icon:'👕',desc:'4500×5400px 标准印花位'},
@@ -1191,8 +1195,8 @@ function renderHome(){
             {name:'抱枕',icon:'🛋️',desc:'方形满印/居中印花'}
           ].map(p=>`<div style="background:#f8f9ff;border:1px solid #e8ecff;border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(22,93,255,.12)'" onmouseout="this.style.transform='';this.style.boxShadow='none'">
             <div style="font-size:36px;margin-bottom:10px">${p.icon}</div>
-            <div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px">${p.name}</div>
-            <div style="font-size:12px;color:#888">${p.desc}</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:4px">${p.name}</div>
+            <div style="font-size:12px;color:var(--text-3)">${p.desc}</div>
           </div>`).join('')}
         </div>
       </div>
@@ -1202,8 +1206,8 @@ function renderHome(){
       <div style="margin-bottom:48px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
           <div>
-            <h2 style="font-size:22px;font-weight:800;margin:0;color:#1a1a1a">免费资源专区</h2>
-            <p style="font-size:13px;color:#999;margin:4px 0 0">注册即可免费下载，含完整 POD 商用授权</p>
+            <h2 style="font-size:22px;font-weight:800;margin:0;color:var(--text-1)">免费资源专区</h2>
+            <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">注册即可免费下载，含完整 POD 商用授权</p>
           </div>
           <span style="font-size:13px;color:#0175cc;cursor:pointer;font-weight:600" onclick="navigate('home')">更多免费 →</span>
         </div>
@@ -1214,22 +1218,22 @@ function renderHome(){
 
       <!-- 科普卡片 -->
       <div style="background:#f8f9ff;border:1px solid #e8ecff;border-radius:12px;padding:28px 32px;margin-bottom:40px">
-        <h3 style="font-size:16px;font-weight:800;margin:0 0 12px;color:#1a1a1a">什么是 POD 印花 PNG？为什么必须用透明底？</h3>
-        <p style="font-size:13px;color:#555;line-height:1.8;margin:0 0 18px">POD（Print on Demand，按需定制）卖家不需要囤货：你上传一张图稿，平台在订单产生后才印制发货。整条链路里唯一的「资产」就是那张图 —— 所以图稿质量直接决定转化率。</p>
+        <h3 style="font-size:16px;font-weight:800;margin:0 0 12px;color:var(--text-1)">什么是 POD 印花 PNG？为什么必须用透明底？</h3>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.8;margin:0 0 18px">POD（Print on Demand，按需定制）卖家不需要囤货：你上传一张图稿，平台在订单产生后才印制发货。整条链路里唯一的「资产」就是那张图 —— 所以图稿质量直接决定转化率。</p>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
           <div style="background:#fff;border-radius:8px;padding:14px 18px">
             <div style="font-size:13px;font-weight:700;color:#0175cc;margin-bottom:6px">POD 图稿硬指标</div>
-            <div style="font-size:12px;color:#666;line-height:1.8">300 DPI · PNG 透明底 · RGB/sRGB · 主体居中留白 · 含商用授权</div>
+            <div style="font-size:12px;color:var(--text-2);line-height:1.8">300 DPI · PNG 透明底 · RGB/sRGB · 主体居中留白 · 含商用授权</div>
           </div>
           <div style="background:#fff;border-radius:8px;padding:14px 18px">
             <div style="font-size:13px;font-weight:700;color:#0175cc;margin-bottom:6px">挑图出单经验</div>
-            <div style="font-size:12px;color:#666;line-height:1.8">踩节点（节日前6-8周）· 踩圈层（垂直爱好）· 踩梗（幽默标语款复购高）</div>
+            <div style="font-size:12px;color:var(--text-2);line-height:1.8">踩节点（节日前6-8周）· 踩圈层（垂直爱好）· 踩梗（幽默标语款复购高）</div>
           </div>
         </div>
       </div>
 
       <!-- FAQ -->
-      <h3 style="font-size:18px;font-weight:800;margin:0 0 16px;color:#1a1a1a">常见问题</h3>
+      <h3 style="font-size:18px;font-weight:800;margin:0 0 16px;color:var(--text-1)">常见问题</h3>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:48px">
         ${[
           {q:'POD 印花 PNG 需要什么规格？',a:'推荐 300 DPI、最长边 4500px 以上、透明背景的 PNG（RGB 色彩模式、sRGB 色彩空间）。T恤印花区常用 4500×5400px。'},
@@ -1237,8 +1241,8 @@ function renderHome(){
           {q:'需要注册才能下载吗？',a:'是的。免费与付费素材均需注册登录后下载，用于记录下载历史与授权凭证，之后可随时在「我的下载」重新获取。'},
           {q:'付费素材怎么付款？',a:'付费素材按单个一次性买断，购买后永久可下载。支持微信支付与支付宝，充值点数永久有效不清零。'}
         ].map(f=>`<div style="background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:18px 20px">
-          <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:6px">${f.q}</div>
-          <div style="font-size:12px;color:#666;line-height:1.7">${f.a}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:6px">${f.q}</div>
+          <div style="font-size:12px;color:var(--text-2);line-height:1.7">${f.a}</div>
         </div>`).join('')}
       </div>
     </div>
@@ -1366,11 +1370,11 @@ function renderDetail(){
                 </div>
                 <!-- 模特切换 -->
                 <div style="display:flex;gap:10px;justify-content:center;align-items:center">
-                  <span style="font-size:12px;color:#999">选择模特：</span>
-                  ${MODELS.map((m,i)=>`<div onclick="STATE.detailModel=${i};render()" style="width:52px;height:52px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid ${STATE.detailModel===i?'#0175cc':'#e0e0e0'};box-shadow:${STATE.detailModel===i?'0 0 0 3px rgba(22,93,255,.2)':'none'};transition:all .15s" title="${m.name}">
+                  <span style="font-size:12px;color:var(--text-3)">选择模特：</span>
+                  ${MODELS.map((m,i)=>`<div onclick="STATE.detailModel=${i};render()" style="width:52px;height:52px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid ${STATE.detailModel===i?'#0175cc':'var(--border)'};box-shadow:${STATE.detailModel===i?'0 0 0 3px rgba(22,93,255,.2)':'none'};transition:all .15s" title="${m.name}">
                     <img src="${m.url}" style="width:100%;height:100%;object-fit:cover;display:block">
                   </div>`).join('')}
-                  <span style="font-size:12px;color:#666;margin-left:8px">${MODELS[STATE.detailModel].name}</span>
+                  <span style="font-size:12px;color:var(--text-2);margin-left:8px">${MODELS[STATE.detailModel].name}</span>
                 </div>
               </div>
             `:''}
@@ -1382,7 +1386,7 @@ function renderDetail(){
                     <img src="${a.image}" style="position:absolute;top:${PRODUCTMODELS.hoodie.top};left:${PRODUCTMODELS.hoodie.left};transform:translate(-50%,-50%);width:${PRODUCTMODELS.hoodie.width};max-width:180px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
                   </div>
                 </div>
-                <div style="text-align:center;font-size:12px;color:#999">${PRODUCTMODELS.hoodie.name} · 胸前/后背大尺寸印花 · 下载后可用于所有 POD 产品</div>
+                <div style="text-align:center;font-size:12px;color:var(--text-3)">${PRODUCTMODELS.hoodie.name} · 胸前/后背大尺寸印花 · 下载后可用于所有 POD 产品</div>
               </div>
             `:''}
             ${STATE.mockupTab==='mug'?`
@@ -1393,7 +1397,7 @@ function renderDetail(){
                     <img src="${a.image}" style="position:absolute;top:${PRODUCTMODELS.mug.top};left:${PRODUCTMODELS.mug.left};transform:translate(-50%,-50%);width:${PRODUCTMODELS.mug.width};max-width:200px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.1))">
                   </div>
                 </div>
-                <div style="text-align:center;font-size:12px;color:#999">${PRODUCTMODELS.mug.name} · 杯身环绕印花适配 · 11oz 标准尺寸</div>
+                <div style="text-align:center;font-size:12px;color:var(--text-3)">${PRODUCTMODELS.mug.name} · 杯身环绕印花适配 · 11oz 标准尺寸</div>
               </div>
             `:''}
             ${STATE.mockupTab==='pillow'?`
@@ -1404,14 +1408,14 @@ function renderDetail(){
                     <img src="${a.image}" style="position:absolute;top:${PRODUCTMODELS.pillow.top};left:${PRODUCTMODELS.pillow.left};transform:translate(-50%,-50%);width:${PRODUCTMODELS.pillow.width};max-width:280px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))">
                   </div>
                 </div>
-                <div style="text-align:center;font-size:12px;color:#999">${PRODUCTMODELS.pillow.name} · 方形满印/居中印花 · 45×45cm 标准尺寸</div>
+                <div style="text-align:center;font-size:12px;color:var(--text-3)">${PRODUCTMODELS.pillow.name} · 方形满印/居中印花 · 45×45cm 标准尺寸</div>
               </div>
             `:''}
             ${STATE.mockupTab==='original'?`
               <div class="card-pad">
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:250px">
                   <div class="text-center">
-                    <div class="checker" style="width:320px;height:320px;border-radius:12px;border:1px solid #e0e0e0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.08)">
+                    <div class="checker" style="width:320px;height:320px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.08)">
                       <img src="${a.image}" alt="${a.title}" style="max-width:80%;max-height:80%;object-fit:contain;display:block">
                     </div>
                     <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
@@ -1419,7 +1423,7 @@ function renderDetail(){
                       <span class="tag tag-dark">透明背景</span>
                       <span class="tag tag-dark">4096×4096</span>
                     </div>
-                    <div style="font-size:12px;color:#999;margin-top:8px">下载后获得无水印高清原图，含 POD 商用授权</div>
+                    <div style="font-size:12px;color:var(--text-3);margin-top:8px">下载后获得无水印高清原图，含 POD 商用授权</div>
                   </div>
                 </div>
               </div>
@@ -1447,35 +1451,35 @@ function renderDetail(){
           </div>
           <!-- 热销数据支撑 -->
           ${HOTDATA[a.id]?`
-          <div style="margin:14px 0;padding:14px 16px;background:linear-gradient(135deg,#fff0f0 0%,#ffe8e8 100%);border:1px solid #ffccc7;border-radius:10px">
+          <div style="margin:14px 0;padding:14px 16px;background:linear-gradient(135deg,#fff0f0 0%,var(--accent-light) 100%);border:1px solid #ffccc7;border-radius:10px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div class="flex-center-gap">
                 <span style="font-size:12px;font-weight:700;color:#cf1322">🔥 热销数据</span>
                 <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#FB5454;color:#fff;font-weight:600">${a.platform}${HOTDATA[a.id].period} #${HOTDATA[a.id].rank}</span>
               </div>
-              <span style="font-size:12px;font-weight:700;color:#52c41a">${HOTDATA[a.id].trend}</span>
+              <span style="font-size:12px;font-weight:700;color:var(--success)">${HOTDATA[a.id].trend}</span>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
               <div style="background:#fff;border-radius:6px;padding:8px 10px">
-                <div style="font-size:10px;color:#999;margin-bottom:2px">近7天销量</div>
-                <div style="font-size:15px;font-weight:800;color:#1a1a1a">${HOTDATA[a.id].sales7d}<span style="font-size:10px;color:#999;font-weight:400"> 件</span></div>
+                <div style="font-size:10px;color:var(--text-3);margin-bottom:2px">近7天销量</div>
+                <div style="font-size:15px;font-weight:800;color:var(--text-1)">${HOTDATA[a.id].sales7d}<span style="font-size:10px;color:var(--text-3);font-weight:400"> 件</span></div>
               </div>
               <div style="background:#fff;border-radius:6px;padding:8px 10px">
-                <div style="font-size:10px;color:#999;margin-bottom:2px">近30天销量</div>
-                <div style="font-size:15px;font-weight:800;color:#1a1a1a">${HOTDATA[a.id].sales30d}<span style="font-size:10px;color:#999;font-weight:400"> 件</span></div>
+                <div style="font-size:10px;color:var(--text-3);margin-bottom:2px">近30天销量</div>
+                <div style="font-size:15px;font-weight:800;color:var(--text-1)">${HOTDATA[a.id].sales30d}<span style="font-size:10px;color:var(--text-3);font-weight:400"> 件</span></div>
               </div>
             </div>
             <!-- 原商品信息 -->
             <div style="background:#fff;border-radius:6px;padding:10px 12px;margin-bottom:10px">
-              <div style="font-size:10px;color:#999;margin-bottom:4px">原商品标题</div>
-              <div style="font-size:11px;color:#333;line-height:1.4;margin-bottom:8px">${HOTDATA[a.id].productTitle}</div>
+              <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">原商品标题</div>
+              <div style="font-size:11px;color:var(--text-1);line-height:1.4;margin-bottom:8px">${HOTDATA[a.id].productTitle}</div>
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
                 <span style="font-size:11px;color:#FB5454;font-weight:700">🔥 ${HOTDATA[a.id].salesTip}</span>
                 <span style="font-size:11px;color:#faad14;font-weight:600">★ ${HOTDATA[a.id].rating}</span>
-                <span style="font-size:11px;color:#999">${HOTDATA[a.id].reviewCount} 条评论</span>
+                <span style="font-size:11px;color:var(--text-3)">${HOTDATA[a.id].reviewCount} 条评论</span>
               </div>
             </div>
-            <div style="font-size:11px;color:#666;line-height:1.6;margin-bottom:8px">
+            <div style="font-size:11px;color:var(--text-2);line-height:1.6;margin-bottom:8px">
               <strong style="color:#cf1322">热销原因：</strong>${HOTDATA[a.id].reason}
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:11px">
@@ -1487,12 +1491,12 @@ function renderDetail(){
           <div style="margin:0 0 14px;padding:14px 16px;background:linear-gradient(135deg,#f0f7ff 0%,#f6ffed 100%);border:1px solid #91caff;border-radius:10px">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
               <span style="font-size:12px;font-weight:700;color:#0958d9">🤖 AI变体说明</span>
-              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#52c41a;color:#fff;font-weight:600">合规变体</span>
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--success);color:#fff;font-weight:600">合规变体</span>
             </div>
-            <div style="font-size:11px;color:#555;line-height:1.7">
+            <div style="font-size:11px;color:var(--text-2);line-height:1.7">
               <div style="margin-bottom:6px"><strong style="color:#0958d9">原款元素：</strong>${a.style}风格 · ${a.topic}主题</div>
               <div style="margin-bottom:6px"><strong style="color:#0958d9">变体处理：</strong>配色重组 + 构图偏移 + 元素重绘，保留热销视觉基因但差异化呈现</div>
-              <div><strong style="color:#52c41a">侵权风险：</strong>低（建议上架前自行商标检索）</div>
+              <div><strong style="color:var(--success)">侵权风险：</strong>低（建议上架前自行商标检索）</div>
             </div>
           </div>`:''}
           <div class="detail-price-row">
@@ -1660,7 +1664,7 @@ function renderProfile(){
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
             去充值
           </div>
-          <div class="pmi" style="color:#F53F3F;margin-top:auto;border-top:1px solid #f0f0f0;padding-top:14px" onclick="if(confirm('确定退出登录吗？')){STATE.user.name='未登录';STATE.user.points=0;navigate('login')}">
+          <div class="pmi" style="color:#F53F3F;margin-top:auto;border-top:1px solid var(--border-light);padding-top:14px" onclick="if(confirm('确定退出登录吗？')){STATE.user.name='未登录';STATE.user.points=0;navigate('login')}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             退出登录
           </div>
@@ -1720,24 +1724,24 @@ function renderLogin(){
         <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#0175cc,#015a9e);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
           <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><path d="M20 16h14c8 0 14 5 14 13s-6 13-14 13h-6v16H20V16zm8 6v14h6c4 0 7-2.5 7-7s-3-7-7-7h-6z" fill="white"/><circle cx="46" cy="46" r="7" fill="none" stroke="#FB5454" stroke-width="3"/><circle cx="46" cy="46" r="2" fill="#FB5454"/></svg>
         </div>
-        <h1 style="font-size:24px;font-weight:800;color:#1a1a1a;margin:0 0 8px">欢迎使用 PrintHunt</h1>
-        <p style="font-size:14px;color:#888;margin:0">手机号验证码登录，新用户注册即送20点</p>
+        <h1 style="font-size:24px;font-weight:800;color:var(--text-1);margin:0 0 8px">欢迎使用 PrintHunt</h1>
+        <p style="font-size:14px;color:var(--text-3);margin:0">手机号验证码登录，新用户注册即送20点</p>
       </div>
       <div class="card" style="padding:28px">
         <div style="margin-bottom:16px">
           <label class="form-label">手机号</label>
-          <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
+          <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
         </div>
         <div style="margin-bottom:20px">
           <label class="form-label">验证码</label>
           <div class="flex-gap">
-            <input type="text" id="loginCode" placeholder="6位验证码" maxlength="6" style="flex:1;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
+            <input type="text" id="loginCode" placeholder="6位验证码" maxlength="6" style="flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
             <button id="sendCodeBtn" onclick="sendVerifyCode()" style="padding:0 16px;background:#E6F2FB;color:#0175cc;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;min-width:100px">获取验证码</button>
           </div>
         </div>
         <button class="btn btn-primary btn-block btn-lg" onclick="verifyLogin()">登录 / 注册</button>
-        <div style="text-align:center;margin-top:14px;font-size:12px;color:#999">未注册的手机号验证后自动创建账号</div>
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;text-align:center">
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-3)">未注册的手机号验证后自动创建账号</div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border-light);text-align:center">
           <div style="font-size:11px;color:#bbb;margin-bottom:10px">其他登录方式</div>
           <div style="display:flex;gap:16px;justify-content:center">
             <div style="width:40px;height:40px;border-radius:50%;background:#07C160;display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="color:#fff;font-size:18px">微</span></div>
@@ -1796,9 +1800,9 @@ function renderHelp(){
     {q:'多久更新一次新图案？',a:'我们每日追踪Temu、TikTok Shop、Shein、Etsy四大平台的热销榜单，每日更新变体图案。节日季会提前6-8周加大更新频率。'}
   ];
   return `<div style="background:#FCF5E2;min-height:calc(100vh - 60px)"><div style="max-width:900px;margin:0 auto;padding:40px 24px">
-    <div style="text-align:center;margin-bottom:36px"><h1 style="font-size:32px;font-weight:800;color:#1a1a1a;margin:0 0 10px">帮助中心</h1><p style="font-size:15px;color:#888;margin:0">常见问题解答，快速找到你需要的答案</p></div>
+    <div style="text-align:center;margin-bottom:36px"><h1 style="font-size:32px;font-weight:800;color:var(--text-1);margin:0 0 10px">帮助中心</h1><p style="font-size:15px;color:var(--text-3);margin:0">常见问题解答，快速找到你需要的答案</p></div>
     <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:8px 24px;margin-bottom:24px">
-      ${faqs.map((f,i)=>`<div style="padding:18px 0;${i<faqs.length-1?'border-bottom:1px solid #f0f0f0':''}"><div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:8px;display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:#0175cc;color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">Q</span>${f.q}</div><div style="font-size:13px;color:#666;line-height:1.8;padding-left:32px">${f.a}</div></div>`).join('')}
+      ${faqs.map((f,i)=>`<div style="padding:18px 0;${i<faqs.length-1?'border-bottom:1px solid var(--border-light)':''}"><div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:8px;display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:#0175cc;color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">Q</span>${f.q}</div><div style="font-size:13px;color:var(--text-2);line-height:1.8;padding-left:32px">${f.a}</div></div>`).join('')}
     </div>
     <div style="background:linear-gradient(135deg,#0175cc,#015a9e);border-radius:12px;padding:28px 32px;text-align:center;color:#fff"><h3 style="font-size:18px;font-weight:700;margin:0 0 8px">还有其他问题？</h3><p style="font-size:13px;color:rgba(255,255,255,.8);margin:0 0 16px">联系我们的客服团队，工作日9:00-18:00在线响应</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button style="background:#fff;color:#0175cc;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">邮箱联系</button><button style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">在线客服</button></div></div>
   </div></div>`;
@@ -1807,19 +1811,20 @@ function renderHelp(){
 /* ===== 商用授权说明页 ===== */
 function renderLicense(){
   return `<div style="background:#FCF5E2;min-height:calc(100vh - 60px)"><div style="max-width:800px;margin:0 auto;padding:40px 24px">
-    <div style="text-align:center;margin-bottom:32px"><div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#0175cc,#015a9e);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h1 style="font-size:28px;font-weight:800;color:#1a1a1a;margin:0 0 8px">POD 商用授权说明</h1><p style="font-size:14px;color:#888;margin:0">下载即获授权，放心印制销售</p></div>
-    <div class="card" style="padding:28px;margin-bottom:20px"><h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;display:flex;align-items:center;gap:8px"><span style="color:#52c41a">✓</span> 允许的使用方式</h3><ul style="font-size:13px;color:#555;line-height:2;margin:0;padding-left:20px"><li>将图案印制在<strong>T恤、卫衣、长袖、背心</strong>等服装类POD商品上销售</li><li>将图案印制在<strong>马克杯、保温杯、酒瓶</strong>等饮品类POD商品上销售</li><li>将图案印制在<strong>抱枕、帆布包、毛巾、毯子</strong>等家居类POD商品上销售</li><li>将图案印制在<strong>贴纸、海报、明信片、笔记本</strong>等纸品类POD商品上销售</li><li>将图案用于<strong>手机壳、鼠标垫、围裙、帽子</strong>等配饰类POD商品上销售</li><li>在Temu、Etsy、亚马逊、Shopify、Redbubble等<strong>所有主流POD平台</strong>使用</li><li>对图案进行<strong>颜色调整、尺寸缩放、添加文字</strong>等二次编辑后使用</li></ul></div>
-    <div class="card" style="padding:28px;margin-bottom:20px"><h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;display:flex;align-items:center;gap:8px"><span style="color:#F53F3F">✗</span> 禁止的使用方式</h3><ul style="font-size:13px;color:#555;line-height:2;margin:0;padding-left:20px"><li><strong>禁止转售源文件</strong>：不得将PNG源文件在任何素材平台、社群、网站上二次销售或分发</li><li><strong>禁止批量打包</strong>：不得将多个图案打包后作为素材包出售</li><li><strong>禁止NFT铸造</strong>：不得将图案铸造为NFT数字藏品进行销售</li><li><strong>禁止商标注册</strong>：不得将图案注册为商标、Logo或品牌标识</li><li><strong>禁止违法用途</strong>：不得将图案用于违法、违规、侵权或伤害他人的商品</li></ul></div>
-    <div class="card" style="padding:28px;margin-bottom:20px;background:#f0f7ff;border-color:#b3d4ff"><h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 12px">授权凭证</h3><p style="font-size:13px;color:#555;line-height:1.8;margin:0 0 12px">每次下载后，系统会自动生成唯一授权编号，可在「我的下载」中查看和导出PDF授权证书，用于平台投诉申诉或版权证明。</p><div style="background:#fff;border-radius:8px;padding:14px 18px;font-size:12px;color:#666;font-family:monospace;line-height:1.8">授权编号：PV-2026-XXXXXX-XXXX<br>授权类型：POD商用永久授权<br>授权范围：全球 / 全品类POD商品<br>生效日期：下载日期</div></div>
-    <div style="text-align:center;font-size:12px;color:#999;line-height:1.8">如有授权相关疑问，请联系：<a class="link-primary">license@printhunt.com</a><br>本授权说明最终解释权归 PrintHunt 所有</div>
+    <div style="text-align:center;margin-bottom:32px"><div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#0175cc,#015a9e);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h1 style="font-size:28px;font-weight:800;color:var(--text-1);margin:0 0 8px">POD 商用授权说明</h1><p style="font-size:14px;color:var(--text-3);margin:0">下载即获授权，放心印制销售</p></div>
+    <div class="card" style="padding:28px;margin-bottom:20px"><h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 16px;display:flex;align-items:center;gap:8px"><span style="color:var(--success)">✓</span> 允许的使用方式</h3><ul style="font-size:13px;color:var(--text-2);line-height:2;margin:0;padding-left:20px"><li>将图案印制在<strong>T恤、卫衣、长袖、背心</strong>等服装类POD商品上销售</li><li>将图案印制在<strong>马克杯、保温杯、酒瓶</strong>等饮品类POD商品上销售</li><li>将图案印制在<strong>抱枕、帆布包、毛巾、毯子</strong>等家居类POD商品上销售</li><li>将图案印制在<strong>贴纸、海报、明信片、笔记本</strong>等纸品类POD商品上销售</li><li>将图案用于<strong>手机壳、鼠标垫、围裙、帽子</strong>等配饰类POD商品上销售</li><li>在Temu、Etsy、亚马逊、Shopify、Redbubble等<strong>所有主流POD平台</strong>使用</li><li>对图案进行<strong>颜色调整、尺寸缩放、添加文字</strong>等二次编辑后使用</li></ul></div>
+    <div class="card" style="padding:28px;margin-bottom:20px"><h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 16px;display:flex;align-items:center;gap:8px"><span style="color:#F53F3F">✗</span> 禁止的使用方式</h3><ul style="font-size:13px;color:var(--text-2);line-height:2;margin:0;padding-left:20px"><li><strong>禁止转售源文件</strong>：不得将PNG源文件在任何素材平台、社群、网站上二次销售或分发</li><li><strong>禁止批量打包</strong>：不得将多个图案打包后作为素材包出售</li><li><strong>禁止NFT铸造</strong>：不得将图案铸造为NFT数字藏品进行销售</li><li><strong>禁止商标注册</strong>：不得将图案注册为商标、Logo或品牌标识</li><li><strong>禁止违法用途</strong>：不得将图案用于违法、违规、侵权或伤害他人的商品</li></ul></div>
+    <div class="card" style="padding:28px;margin-bottom:20px;background:#f0f7ff;border-color:#b3d4ff"><h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 12px">授权凭证</h3><p style="font-size:13px;color:var(--text-2);line-height:1.8;margin:0 0 12px">每次下载后，系统会自动生成唯一授权编号，可在「我的下载」中查看和导出PDF授权证书，用于平台投诉申诉或版权证明。</p><div style="background:#fff;border-radius:8px;padding:14px 18px;font-size:12px;color:var(--text-2);font-family:monospace;line-height:1.8">授权编号：PV-2026-XXXXXX-XXXX<br>授权类型：POD商用永久授权<br>授权范围：全球 / 全品类POD商品<br>生效日期：下载日期</div></div>
+    <div style="text-align:center;font-size:12px;color:var(--text-3);line-height:1.8">如有授权相关疑问，请联系：<a class="link-primary">license@printhunt.com</a><br>本授权说明最终解释权归 PrintHunt 所有</div>
   </div></div>`;
 }
 
 /* ===== 404页面 ===== */
 function render404(){
-  return `<div style="background:#FCF5E2;min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:40px 24px"><div style="text-align:center;max-width:480px"><div style="font-size:120px;font-weight:900;color:#0175cc;line-height:1;margin-bottom:8px;letter-spacing:-4px">404</div><h2 style="font-size:24px;font-weight:700;color:#1a1a1a;margin:0 0 12px">页面走丢了</h2><p style="font-size:14px;color:#888;margin:0 0 28px;line-height:1.7">你访问的页面不存在或已被移除，不如去看看本周热销的印花图案？</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary btn-lg" onclick="navigate('home')">返回首页</button><button class="btn btn-lg" style="background:#fff;color:#666;border:1px solid #ddd" onclick="navigate('help')">帮助中心</button></div></div></div>`;
+  return `<div style="background:#FCF5E2;min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:40px 24px"><div style="text-align:center;max-width:480px"><div style="font-size:120px;font-weight:900;color:#0175cc;line-height:1;margin-bottom:8px;letter-spacing:-4px">404</div><h2 style="font-size:24px;font-weight:700;color:var(--text-1);margin:0 0 12px">页面走丢了</h2><p style="font-size:14px;color:var(--text-3);margin:0 0 28px;line-height:1.7">你访问的页面不存在或已被移除，不如去看看本周热销的印花图案？</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary btn-lg" onclick="navigate('home')">返回首页</button><button class="btn btn-lg" style="background:#fff;color:var(--text-2);border:1px solid var(--border)" onclick="navigate('help')">帮助中心</button></div></div></div>`;
 }
 
+/* ===== 管理后台渲染 ===== */
 function renderAdmin(){
   return `<div class="admin-layout">
     <div class="admin-side">
@@ -1857,7 +1862,7 @@ function renderAdmin(){
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Apify配置
       </div>
       <div style="margin-top:auto;padding:16px;border-top:1px solid #e8e8e8">
-        <div style="font-size:11px;color:#999;margin-bottom:8px">运营人员：admin</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">运营人员：admin</div>
         <button onclick="adminLogout()" style="width:100%;padding:8px;background:#fff;color:#F53F3F;border:1px solid #ffccc7;border-radius:6px;font-size:12px;cursor:pointer;transition:all .2s">退出登录</button>
       </div>
     </div>
@@ -1875,6 +1880,7 @@ function renderAdmin(){
   </div>`;
 }
 
+/* ===== 管理后台各模块 ===== */
 function renderAdDashboard(){
   const data=[42,58,35,72,65,88,76,92,68,85,95,78];
   const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
@@ -2007,19 +2013,19 @@ function renderAdCollect(){
         <div>
           <label class="form-label">采集平台（可多选）</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${['Temu','Etsy','Shein'].map((p,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:#333;cursor:pointer"><input type="checkbox" checked style="accent-color:#0175cc">${p}</label>`).join('')}
-            <span style="font-size:11px;color:#ccc;text-decoration:line-through">TikTok（暂未启用）</span>
+            ${['Temu','Etsy','Shein'].map((p,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-1);cursor:pointer"><input type="checkbox" checked style="accent-color:#0175cc">${p}</label>`).join('')}
+            <span style="font-size:11px;color:var(--border);text-decoration:line-through">TikTok（暂未启用）</span>
           </div>
         </div>
         <div>
           <label class="form-label">榜单周期</label>
-          <select style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+          <select style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
             <option>日榜</option><option>周榜</option><option>月榜</option>
           </select>
         </div>
         <div>
           <label class="form-label">单次采集上限（条）</label>
-          <input type="number" value="30" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;box-sizing:border-box">
+          <input type="number" value="30" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box">
         </div>
         <div>
           <label class="form-label">定时采集</label>
@@ -2029,13 +2035,13 @@ function renderAdCollect(){
               <span style="position:absolute;inset:0;background:#0175cc;border-radius:20px;transition:.2s"></span>
               <span style="position:absolute;left:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;transform:translateX(16px)"></span>
             </label>
-            <span style="font-size:12px;color:#333">每日06:00自动采集</span>
+            <span style="font-size:12px;color:var(--text-1)">每日06:00自动采集</span>
           </div>
         </div>
       </div>
       <div style="margin-bottom:16px">
         <label class="form-label">POD热门搜索关键词（每行一个，采集时随机选取）</label>
-        <textarea rows="4" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;box-sizing:border-box;font-family:monospace;resize:vertical">graphic tee
+        <textarea rows="4" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;font-family:monospace;resize:vertical">graphic tee
 vintage t shirt design
 funny slogan shirt
 retro animal print
@@ -2050,7 +2056,7 @@ christmas holiday tee</textarea>
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary btn-sm" onclick="toast('采集任务已提交，Apify正在执行，完成后Webhook自动回调落库')">提交采集任务</button>
         <button class="btn btn-outline btn-sm" onclick="toast('配置已保存')">保存配置</button>
-        <span style="font-size:11px;color:#999;align-self:center;margin-left:auto">Apify API 状态：<span style="color:#52c41a;font-weight:600">● 正常</span> · 本月剩余额度：$4.99 / $5（免费版）</span>
+        <span style="font-size:11px;color:var(--text-3);align-self:center;margin-left:auto">Apify API 状态：<span style="color:var(--success);font-weight:600">● 正常</span> · 本月剩余额度：$4.99 / $5（免费版）</span>
       </div>
     </div>
     <!-- 采集历史记录 -->
@@ -2058,10 +2064,10 @@ christmas holiday tee</textarea>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <h3 style="margin:0">采集历史记录</h3>
         <div class="flex-gap">
-          <select style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+          <select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
             <option>全部平台</option><option>Temu</option><option>Etsy</option><option>Shein</option><option>TikTok</option>
           </select>
-          <select style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+          <select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
             <option>全部状态</option><option>已完成</option><option>采集中</option><option>失败</option>
           </select>
         </div>
@@ -2074,11 +2080,11 @@ christmas holiday tee</textarea>
           <td><span class="tag tag-blue">${h.platform}</span></td>
           <td>${h.period}</td>
           <td>${h.count}</td>
-          <td><span style="color:#52c41a;font-weight:600">${h.success}</span> / <span style="color:#F53F3F">${h.failed}</span></td>
+          <td><span style="color:var(--success);font-weight:600">${h.success}</span> / <span style="color:#F53F3F">${h.failed}</span></td>
           <td>${h.duration}</td>
           <td><span class="tag ${h.status==='已完成'?'tag-green':h.status==='失败'?'tag-red':'tag-orange'}">${h.status}</span></td>
           <td style="font-size:12px">${h.time}</td>
-          <td style="font-size:11px;color:${h.failed>0?'#F53F3F':'#999'};max-width:160px">${h.failReason}</td>
+          <td style="font-size:11px;color:${h.failed>0?'#F53F3F':'var(--text-3)'};max-width:160px">${h.failReason}</td>
           <td>
             <button class="btn btn-outline btn-sm" onclick="toast('查看任务 ${h.id} 详情')">详情</button>
             ${h.status==='失败'?`<button class="btn btn-primary btn-sm" style="margin-left:4px" onclick="toast('已重新提交采集任务 ${h.id}')">重试</button>`:''}
@@ -2104,15 +2110,15 @@ christmas holiday tee</textarea>
           <div style="position:relative;aspect-ratio:1;background:#fafafa;display:flex;align-items:center;justify-content:center">
             <img src="${item.image}" style="max-width:80%;max-height:80%;object-fit:contain">
             <span style="position:absolute;top:6px;left:6px;font-size:10px;padding:2px 6px;border-radius:3px;background:#0175cc;color:#fff;font-weight:600">${item.platform}</span>
-            <span style="position:absolute;top:6px;right:6px;font-size:10px;padding:2px 6px;border-radius:3px;background:${item.status==='已变体'?'#52c41a':item.status==='待变体'?'#FB5454':'#999'};color:#fff;font-weight:600">${item.status}</span>
+            <span style="position:absolute;top:6px;right:6px;font-size:10px;padding:2px 6px;border-radius:3px;background:${item.status==='已变体'?'var(--success)':item.status==='待变体'?'#FB5454':'var(--text-3)'};color:#fff;font-weight:600">${item.status}</span>
           </div>
           <div style="padding:8px 10px">
-            <div style="font-size:11px;font-weight:600;color:#1a1a1a;margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${item.title}</div>
-            <div style="font-size:10px;color:#999;display:flex;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:11px;font-weight:600;color:var(--text-1);margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${item.title}</div>
+            <div style="font-size:10px;color:var(--text-3);display:flex;justify-content:space-between;margin-bottom:6px">
               <span>${item.period}#${item.rank}</span>
-              <span style="color:#52c41a;font-weight:600">${item.trend}</span>
+              <span style="color:var(--success);font-weight:600">${item.trend}</span>
             </div>
-            <div style="font-size:10px;color:#999;margin-bottom:8px">销量 ${item.sales} · ${item.collectedAt.slice(5)}</div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:8px">销量 ${item.sales} · ${item.collectedAt.slice(5)}</div>
             ${item.status==='待变体'?`<button class="btn btn-primary btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="triggerVariantWorkflow(1,2)" title="对该商品生成变体">生成AI变体</button>`:item.status==='已变体'?`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="navigate('detail',{id:${item.variantId}})">查看变体</button>`:`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="toast('已提交审核，审核通过后可发布')">提交审核</button>`}
           </div>
         </div>`).join('')}
@@ -2136,7 +2142,7 @@ function renderAdSettings(){
         <div>
           <label class="form-label">Apify API Token</label>
           <div class="flex-gap">
-            <input type="password" value="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
+            <input type="password" value="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace">
             <button class="btn btn-outline btn-sm" onclick="toast('Token已复制到剪贴板')">显示</button>
           </div>
           <div class="hint-text" style="margin-top:6px">在 Apify 控制台 → Settings → Integrations 中获取</div>
@@ -2144,7 +2150,7 @@ function renderAdSettings(){
         <div>
           <label class="form-label">Webhook 回调地址</label>
           <div class="flex-gap">
-            <input type="text" value="https://api.printhunt.com/webhook/apify/collect" readonly style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;background:#f5f5f5">
+            <input type="text" value="https://api.printhunt.com/webhook/apify/collect" readonly style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;background:var(--border-light)">
             <button class="btn btn-outline btn-sm" onclick="toast('回调地址已复制')">复制</button>
           </div>
           <div class="hint-text" style="margin-top:6px">Apify任务完成后自动回调此地址，落库采集结果</div>
@@ -2152,15 +2158,15 @@ function renderAdSettings(){
         <div>
           <label class="form-label">GitHub Token（用于后台触发采集/变体工作流）</label>
           <div class="flex-gap">
-            <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${getGithubToken()}" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
+            <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${getGithubToken()}" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace">
             <button class="btn btn-outline btn-sm" onclick="saveGithubToken()">保存</button>
           </div>
           <div class="hint-text" style="margin-top:6px">仅保存在本地浏览器，用于调用GitHub API触发Actions。GitHub → Settings → Developer settings → Personal access tokens</div>
         </div>
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:6px;display:flex;align-items:center;gap:8px">
-        <span style="color:#52c41a;font-size:16px">●</span>
-        <span style="font-size:13px;color:#389e0d">连接状态：正常 · 最后测试时间：2026-09-03 14:25</span>
+        <span style="color:var(--success);font-size:16px">●</span>
+        <span style="font-size:13px;color:var(--success)">连接状态：正常 · 最后测试时间：2026-09-03 14:25</span>
       </div>
     </div>
     <!-- 平台Actor配置 -->
@@ -2171,8 +2177,8 @@ function renderAdSettings(){
         <tbody>
           <tr><td><span class="tag tag-blue">Temu</span></td><td><code class="gray-tag">web.harvester~temu-scraper</code></td><td>Temu Product Scraper</td><td>~$0.30 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
           <tr><td><span class="tag tag-orange">Etsy</span></td><td><code class="gray-tag">epctex~etsy-scraper</code></td><td>Etsy Scraper</td><td>~$0.45 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag" style="background:#ff4d4f;color:#fff">Shein</span></td><td><code class="gray-tag">shahidirfan~shein-product-scraper</code></td><td>Shein Product Scraper</td><td>~$0.35 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag tag-gray" style="opacity:0.5">TikTok</span></td><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px;opacity:0.5">clockworks~tiktok-scraper</code></td><td>TikTok Scraper（视频）</td><td>-</td><td><span class="tag tag-gray">暂未启用</span></td><td><button class="btn btn-outline btn-sm" disabled style="opacity:0.5">测试</button></td></tr>
+          <tr><td><span class="tag" style="background:var(--danger);color:#fff">Shein</span></td><td><code class="gray-tag">shahidirfan~shein-product-scraper</code></td><td>Shein Product Scraper</td><td>~$0.35 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
+          <tr><td><span class="tag tag-gray" style="opacity:0.5">TikTok</span></td><td><code style="background:var(--border-light);padding:2px 6px;border-radius:4px;font-size:11px;opacity:0.5">clockworks~tiktok-scraper</code></td><td>TikTok Scraper（视频）</td><td>-</td><td><span class="tag tag-gray">暂未启用</span></td><td><button class="btn btn-outline btn-sm" disabled style="opacity:0.5">测试</button></td></tr>
         </tbody>
       </table>
     </div>
@@ -2182,7 +2188,7 @@ function renderAdSettings(){
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
         <div class="gray-box">
           <div class="hint-text-bottom">本月套餐额度</div>
-          <div style="font-size:22px;font-weight:800;color:#1a1a1a">$50.00</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text-1)">$50.00</div>
         </div>
         <div class="gray-box">
           <div class="hint-text-bottom">已使用</div>
@@ -2190,7 +2196,7 @@ function renderAdSettings(){
         </div>
         <div class="gray-box">
           <div class="hint-text-bottom">剩余额度</div>
-          <div style="font-size:22px;font-weight:800;color:#52c41a">$42.50</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success)">$42.50</div>
         </div>
         <div class="gray-box">
           <div class="hint-text-bottom">本月采集条数</div>
@@ -2198,24 +2204,24 @@ function renderAdSettings(){
         </div>
       </div>
       <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:6px">
           <span>额度使用进度</span><span>15%</span>
         </div>
         <div style="height:8px;background:#eee;border-radius:4px;overflow:hidden">
-          <div style="width:15%;height:100%;background:linear-gradient(90deg,#0175cc,#52c41a);border-radius:4px"></div>
+          <div style="width:15%;height:100%;background:linear-gradient(90deg,#0175cc,var(--success));border-radius:4px"></div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div>
           <label class="form-label">额度告警阈值（低于此值发送邮件提醒）</label>
           <div class="flex-center-gap">
-            <input type="number" value="10" style="width:80px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px">
-            <span style="font-size:12px;color:#999">美元</span>
+            <input type="number" value="10" style="width:80px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <span style="font-size:12px;color:var(--text-3)">美元</span>
           </div>
         </div>
         <div>
           <label class="form-label">告警通知邮箱</label>
-          <input type="email" value="admin@printhunt.com" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
+          <input type="email" value="admin@printhunt.com" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
         </div>
       </div>
     </div>
@@ -2225,17 +2231,17 @@ function renderAdSettings(){
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
         <div>
           <label class="form-label">默认单次采集上限</label>
-          <input type="number" value="200" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
+          <input type="number" value="200" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
           <div class="hint-text-top">防止单次任务消耗过多额度</div>
         </div>
         <div>
           <label class="form-label">失败重试次数</label>
-          <input type="number" value="2" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
+          <input type="number" value="2" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
           <div class="hint-text-top">单条商品采集失败后的重试次数</div>
         </div>
         <div>
           <label class="form-label">代理池配置</label>
-          <select style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+          <select style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px">
             <option>Apify 自动代理（推荐）</option>
             <option>住宅代理</option>
             <option>数据中心代理</option>
@@ -2336,7 +2342,7 @@ function renderAdRisk(){
     <div class="chart-row">
       <div class="chart-card"><h3>近7天风控拦截</h3>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-          <div style="text-align:center;padding:14px;background:#FFECE8;border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--danger)">23</div><div style="font-size:11px;color:var(--text-2)">关键词拦截</div></div>
+          <div style="text-align:center;padding:14px;background:var(--accent-light);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--danger)">23</div><div style="font-size:11px;color:var(--text-2)">关键词拦截</div></div>
           <div style="text-align:center;padding:14px;background:var(--accent-light);border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--accent)">8</div><div style="font-size:11px;color:var(--text-2)">人工拒绝</div></div>
           <div style="text-align:center;padding:14px;background:#E8FFEA;border-radius:8px"><div style="font-size:22px;font-weight:800;color:var(--success)">328</div><div style="font-size:11px;color:var(--text-2)">审核通过</div></div>
         </div>
