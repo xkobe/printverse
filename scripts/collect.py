@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 # 配置
-APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
+APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "").strip()
 DATA_DIR = Path(__file__).parent.parent / "data"
 RAW_DIR = DATA_DIR / "raw"
 IMAGES_DIR = DATA_DIR / "images"
