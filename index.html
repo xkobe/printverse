@@ -850,9 +850,16 @@ const BLACKLIST=['Disney','Marvel','Nike','Supreme','Louis Vuitton','Gucci','Adi
 
 /* ===== 工具 ===== */
 function navigate(r,params){
-  STATE.currentRoute=r;
-  if(params)STATE.routeParams=params;
-  location.hash=r+(params?'?'+new URLSearchParams(params).toString():'');
+  if(r==='admin'){
+    STATE.mode='admin';
+    STATE.adminTab=params&&params.tab?params.tab:'dashboard';
+    location.hash='/admin/'+STATE.adminTab;
+  }else{
+    STATE.mode='user';
+    STATE.currentRoute=r;
+    if(params)STATE.routeParams=params;
+    location.hash=r+(params?'?'+new URLSearchParams(params).toString():'');
+  }
   render();updateNav();
 }
 function updateNav(){
@@ -999,7 +1006,7 @@ function assetCard(a,opts={}){
 
 /* ===== 渲染 ===== */
 // 页面加载时自动拉取采集数据
-if(window.location.hash.indexOf('admin')>=0){ loadProductsData(); }
+// 路由解析移到init()中统一处理
 function render(){
   const app=document.getElementById('app');
   if(STATE.mode==='admin'){app.innerHTML=renderAdmin();}
@@ -2400,16 +2407,28 @@ function addBl(){
 }
 
 /* ===== 初始化 ===== */
+function parseHash(){
+  const h=location.hash.slice(1);
+  if(h.indexOf('admin')>=0){
+    STATE.mode='admin';
+    const parts=h.split('/');
+    if(parts.length>2 && parts[2]){ STATE.adminTab=parts[2]; }
+  }else{
+    STATE.mode='user';
+    const [r,q]=h.split('?');
+    STATE.currentRoute=r||'home';
+    if(q){const p={};q.split('&').forEach(x=>{const[k,v]=x.split('=');p[k]=decodeURIComponent(v)});STATE.routeParams=p;}
+  }
+}
 function init(){
+  parseHash();
   render();
+  if(STATE.mode==='admin'){ loadProductsData(); }
   window.addEventListener('hashchange',()=>{
-    const h=location.hash.slice(1);
-    if(h&&!h.startsWith('admin')){
-      const [r,q]=h.split('?');
-      STATE.currentRoute=r||'home';
-      if(q){const p={};q.split('&').forEach(x=>{const[k,v]=x.split('=');p[k]=decodeURIComponent(v)});STATE.routeParams=p;}
-      render();updateNav();
-    }
+    parseHash();
+    render();
+    updateNav();
+    if(STATE.mode==='admin' && STATE.adminTab==='collect'){ loadProductsData(); }
   });
 }
 init();
