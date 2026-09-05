@@ -92,35 +92,61 @@ def main():
         data = json.load(f)
 
     products = data.get("products", [])
+
+    # 环境变量控制
+    variant_limit = int(os.environ.get("VARIANT_LIMIT", "0"))
+    variants_per_product = int(os.environ.get("VARIANTS_PER_PRODUCT", "2"))
+
+    # 只处理有本地图片的商品
+    products_with_image = [p for p in products if p.get("local_image")]
+
+    # 限制数量
+    if variant_limit > 0:
+        products_with_image = products_with_image[:variant_limit]
+
     print(f"=== PrintVerse 变体生成任务 ===")
-    print(f"待处理商品: {len(products)} 个")
+    print(f"采集商品总数: {len(products)}")
+    print(f"有图片可处理: {len(products_with_image)}")
+    print(f"本次处理上限: {variant_limit if variant_limit > 0 else '全部'}")
+    print(f"每商品变体数: {variants_per_product}")
     print(f"AI API提供商: {AI_API_PROVIDER}")
 
     if AI_API_PROVIDER == "none" or not AI_API_KEY:
         print("提示: 未配置AI绘图API，将使用Pillow基础变体（占位）")
         print("      配置 AI_IMAGE_API_KEY 和 AI_IMAGE_API_ENDPOINT 后启用AI变体")
 
-    variants = []
+    # 加载已有的变体数据，避免重复生成
+    existing_variants = []
+    variants_file = DATA_DIR / "variants.json"
+    if variants_file.exists():
+        with open(variants_file, "r", encoding="utf-8") as f:
+            existing_data = json.load(f)
+            existing_variants = existing_data.get("variants", [])
+    existing_source_images = {v.get("source_image") for v in existing_variants}
 
-    for i, product in enumerate(products):
+    variants = list(existing_variants)
+    new_count = 0
+
+    for i, product in enumerate(products_with_image):
         title = product.get("title", "unknown")[:40]
         platform = product.get("platform", "unknown")
         local_image = product.get("local_image", "")
 
-        print(f"\n[{i+1}/{len(products)}] {platform}: {title}...")
-
-        if not local_image:
-            print("    跳过: 无本地图片")
+        # 跳过已经生成过的
+        if local_image in existing_source_images:
+            print(f"\n[{i+1}/{len(products_with_image)}] {platform}: {title}... 跳过（已生成）")
             continue
+
+        print(f"\n[{i+1}/{len(products_with_image)}] {platform}: {title}...")
 
         image_path = DATA_DIR.parent / local_image
         if not image_path.exists():
             print(f"    跳过: 图片不存在 {image_path}")
             continue
 
-        # 为每个商品生成2个变体
+        # 为每个商品生成变体
         product_variants = []
-        for v in range(2):
+        for v in range(variants_per_product):
             variant_name = f"{platform}_{i:03d}_v{v}.png"
             variant_path = VARIANTS_DIR / variant_name
 
@@ -140,18 +166,19 @@ def main():
                     "variant_image": f"data/variants/{variant_name}",
                     "variant_type": "ai" if AI_API_KEY else "basic",
                     "created_at": datetime.now().isoformat(),
-                    "status": "pending_review",  # 待审核
+                    "status": "pending_review",
                 }
                 product_variants.append(variant_data)
                 print(f"    变体{v+1}已生成: {variant_name}")
+                new_count += 1
 
         variants.extend(product_variants)
 
     # 保存变体数据
-    variants_file = DATA_DIR / "variants.json"
     output = {
         "updated_at": datetime.now().isoformat(),
         "total": len(variants),
+        "new_this_run": new_count,
         "ai_enabled": bool(AI_API_KEY and AI_API_ENDPOINT),
         "variants": variants,
     }
@@ -159,9 +186,9 @@ def main():
         json.dump(output, f, ensure_ascii=False, indent=2)
 
     print(f"\n=== 变体生成完成 ===")
-    print(f"生成变体: {len(variants)} 个")
+    print(f"本次新增: {new_count} 个")
+    print(f"累计变体: {len(variants)} 个")
     print(f"数据已保存: {variants_file}")
-    print(f"::set-output name=variants::{len(variants)}")
 
 
 if __name__ == "__main__":
