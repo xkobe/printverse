@@ -1,4 +1,4 @@
-name: Daily Collect & Generate Variants
+name: Daily Collect
 
 on:
   # 测试期间关闭自动定时任务，只手动触发，避免意外消耗Apify额度
@@ -40,13 +40,6 @@ jobs:
           TEST_MODE: ${{ github.event.inputs.test_mode || 'true' }}
         run: python scripts/collect.py
 
-      - name: Run variant generation
-        env:
-          AI_IMAGE_API_KEY: ${{ secrets.AI_IMAGE_API_KEY }}
-          AI_IMAGE_API_ENDPOINT: ${{ secrets.AI_IMAGE_API_ENDPOINT }}
-          AI_IMAGE_API_PROVIDER: ${{ secrets.AI_IMAGE_API_PROVIDER }}
-        run: python scripts/generate_variant.py
-
       - name: Commit and push results
         run: |
           git config --local user.email "printverse-bot@users.noreply.github.com"
@@ -54,4 +47,4 @@ jobs:
           git pull origin main --rebase || true
           git add data/
           git diff --staged --quiet || git commit -m "🤖 采集更新: $(date +'%Y-%m-%d') (测试模式)"
-          git push origin main || git push origin main --force
+          git push origin main
