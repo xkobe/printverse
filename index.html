@@ -733,6 +733,77 @@ async function refreshCollectData(){
   toast('正在从GitHub拉取最新采集数据...');
   await loadProductsData(true);
   toast('数据已刷新，共'+(PRODUCTS_DATA?PRODUCTS_DATA.total:0)+'条');
+
+// GitHub API 配置与触发
+function getGithubToken(){ return localStorage.getItem('printhunt_gh_token') || ''; }
+function saveGithubToken(){
+  const input = document.getElementById('gh-token-input');
+  if(input){
+    localStorage.setItem('printhunt_gh_token', input.value.trim());
+    toast('GitHub Token已保存到本地浏览器');
+  }
+}
+async function triggerVariantWorkflow(limit, variantsPerProduct){
+  const token = getGithubToken();
+  if(!token){ toast('请先在「Apify配置」页面填写GitHub Token'); STATE.adminTab='settings'; render(); return; }
+  toast('正在触发生成变体任务...');
+  try{
+    const resp = await fetch('https://api.github.com/repos/xkobe/printverse/actions/workflows/generate-variant.yml/dispatches', {
+      method: 'POST',
+      headers: { 'Authorization': 'token '+token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main', inputs: { limit: String(limit||5), variants_per_product: String(variantsPerProduct||2) } })
+    });
+    if(resp.status === 204){
+      toast('✅ 变体生成任务已触发！GitHub Actions正在执行，约2-5分钟完成');
+      // 3秒后开始轮询状态
+      setTimeout(pollVariantStatus, 5000);
+    } else {
+      const err = await resp.json().catch(()=>({message:resp.statusText}));
+      toast('❌ 触发失败: '+(err.message || resp.status));
+    }
+  }catch(e){ toast('❌ 网络错误: '+e.message); }
+}
+async function pollVariantStatus(){
+  const token = getGithubToken();
+  if(!token) return;
+  try{
+    const resp = await fetch('https://api.github.com/repos/xkobe/printverse/actions/runs?per_page=1', {
+      headers: { 'Authorization': 'token '+token, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    const data = await resp.json();
+    if(data.workflow_runs && data.workflow_runs.length>0){
+      const run = data.workflow_runs[0];
+      if(run.status === 'completed'){
+        if(run.conclusion === 'success'){
+          toast('✅ 变体生成完成！点击「刷新数据」查看结果');
+        } else {
+          toast('⚠️ 变体生成失败: '+run.conclusion);
+        }
+      } else {
+        toast('变体生成中... ('+run.status+')，继续等待');
+        setTimeout(pollVariantStatus, 10000);
+      }
+    }
+  }catch(e){ console.warn('轮询失败', e); }
+}
+async function triggerCollectWorkflow(){
+  const token = getGithubToken();
+  if(!token){ toast('请先在「Apify配置」页面填写GitHub Token'); STATE.adminTab='settings'; render(); return; }
+  toast('正在触发采集任务...');
+  try{
+    const resp = await fetch('https://api.github.com/repos/xkobe/printverse/actions/workflows/daily-collect.yml/dispatches', {
+      method: 'POST',
+      headers: { 'Authorization': 'token '+token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main', inputs: { test_mode: 'true' } })
+    });
+    if(resp.status === 204){
+      toast('✅ 采集任务已触发！约1-2分钟完成，完成后点击「刷新数据」');
+    } else {
+      const err = await resp.json().catch(()=>({message:resp.statusText}));
+      toast('❌ 触发失败: '+(err.message || resp.status));
+    }
+  }catch(e){ toast('❌ 网络错误: '+e.message); }
+}
 }
 function productsToCollectItems(data){
   if(!data || !data.products) return COLLECT_ITEMS;
@@ -1944,7 +2015,8 @@ function renderAdCollect(){
       <div class="ha">
         <button class="btn btn-outline btn-sm" onclick="STATE.adminTab='settings';render()">Apify配置</button>
         <button class="btn btn-outline btn-sm" onclick="refreshCollectData()">刷新数据</button>
-        <button class="btn btn-primary btn-sm" onclick="toast('请前往GitHub Actions → Daily Collect → Run workflow 触发采集，完成后点击「刷新数据」')">手动采集</button>
+        <button class="btn btn-outline btn-sm" onclick="triggerCollectWorkflow()">手动采集</button>
+        <button class="btn btn-primary btn-sm" onclick="triggerVariantWorkflow(5,2)">批量生成变体</button>
       </div>
     </div>
     <!-- 版权风险提示 -->
@@ -2074,7 +2146,7 @@ christmas holiday tee</textarea>
               <span style="color:#52c41a;font-weight:600">${item.trend}</span>
             </div>
             <div style="font-size:10px;color:#999;margin-bottom:8px">销量 ${item.sales} · ${item.collectedAt.slice(5)}</div>
-            ${item.status==='待变体'?`<button class="btn btn-primary btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="toast('已提交AI变体生成任务：${item.title}，WD14-Tagger+Flux-POD-Variant处理中')">生成AI变体</button>`:item.status==='已变体'?`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="navigate('detail',{id:${item.variantId}})">查看变体</button>`:`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="toast('已提交审核，审核通过后可发布')">提交审核</button>`}
+            ${item.status==='待变体'?`<button class="btn btn-primary btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="triggerVariantWorkflow(1,2)" title="对该商品生成变体">生成AI变体</button>`:item.status==='已变体'?`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="navigate('detail',{id:${item.variantId}})">查看变体</button>`:`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="toast('已提交审核，审核通过后可发布')">提交审核</button>`}
           </div>
         </div>`).join('')}
       </div>
@@ -2109,6 +2181,14 @@ function renderAdSettings(){
             <button class="btn btn-outline btn-sm" onclick="toast('回调地址已复制')">复制</button>
           </div>
           <div style="font-size:11px;color:#999;margin-top:6px">Apify任务完成后自动回调此地址，落库采集结果</div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">GitHub Token（用于后台触发采集/变体工作流）</label>
+          <div style="display:flex;gap:8px">
+            <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${getGithubToken()}" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
+            <button class="btn btn-outline btn-sm" onclick="saveGithubToken()">保存</button>
+          </div>
+          <div style="font-size:11px;color:#999;margin-top:6px">仅保存在本地浏览器，用于调用GitHub API触发Actions。GitHub → Settings → Developer settings → Personal access tokens</div>
         </div>
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:6px;display:flex;align-items:center;gap:8px">
