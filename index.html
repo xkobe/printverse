@@ -723,7 +723,16 @@ async function loadProductsData(force){
     if(r.ok){ PRODUCTS_DATA = await r.json(); }
   }catch(e){ console.warn('products.json加载失败', e); }
   PRODUCTS_LOADING = false;
+  // 如果当前在采集管理页，自动刷新
+  if(typeof render === 'function' && STATE && STATE.page==='admin' && STATE.adminTab==='collect'){
+    render();
+  }
   return PRODUCTS_DATA;
+}
+async function refreshCollectData(){
+  toast('正在从GitHub拉取最新采集数据...');
+  await loadProductsData(true);
+  toast('数据已刷新，共'+(PRODUCTS_DATA?PRODUCTS_DATA.total:0)+'条');
 }
 function productsToCollectItems(data){
   if(!data || !data.products) return COLLECT_ITEMS;
@@ -1934,7 +1943,8 @@ function renderAdCollect(){
     <div class="admin-head"><h1>热销款采集</h1>
       <div class="ha">
         <button class="btn btn-outline btn-sm" onclick="STATE.adminTab='settings';render()">Apify配置</button>
-        <button class="btn btn-primary btn-sm" onclick="toast('已触发Temu日榜采集任务，Apify runId: apify-run-xxxxx，预计2分钟完成')">手动采集</button>
+        <button class="btn btn-outline btn-sm" onclick="refreshCollectData()">刷新数据</button>
+        <button class="btn btn-primary btn-sm" onclick="toast('请前往GitHub Actions → Daily Collect → Run workflow 触发采集，完成后点击「刷新数据」')">手动采集</button>
       </div>
     </div>
     <!-- 版权风险提示 -->
@@ -1946,7 +1956,7 @@ function renderAdCollect(){
     </div>
     <!-- 采集统计 -->
     <div class="stat-row">
-      <div class="stat-card"><div class="sl">今日采集成功</div><div class="sv">${todayCount}</div><div class="sc up">4个平台 · 日榜</div></div>
+      <div class="stat-card"><div class="sl">采集素材总数</div><div class="sv">${todayCount}</div><div class="sc up">${PRODUCTS_DATA?'实时数据':'模拟数据'}</div></div>
       <div class="stat-card"><div class="sl">累计采集素材</div><div class="sv">${weekCount}</div><div class="sc up">近7天数据</div></div>
       <div class="stat-card"><div class="sl">采集成功率</div><div class="sv">${successRate}%</div><div class="sc up">Apify API 稳定</div></div>
       <div class="stat-card"><div class="sl">待AI变体</div><div class="sv">${pendingCount}</div><div class="sc down">需尽快处理</div></div>
