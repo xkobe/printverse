@@ -478,6 +478,35 @@ body.admin-mode{background:#f0f2f5;}
 .admin-login-back{display:block;text-align:center;margin-top:16px;font-size:var(--font-sm);color:#999;cursor:pointer;text-decoration:none;}
 .admin-login-back:hover{color:var(--primary);}
 
+/* ===== 工具类（从内联style抽离） ===== */
+.form-label{font-size:var(--font-sm);color:var(--text-2);display:block;margin-bottom:6px}
+.flex-gap{display:flex;gap:8px}
+.flex-center-gap{display:flex;align-items:center;gap:8px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.flex-center{display:flex;align-items:center;justify-content:center}
+.hint-text{font-size:var(--font-xs);color:var(--text-3)}
+.hint-text-top{font-size:var(--font-xs);color:var(--text-3);margin-top:4px}
+.hint-text-bottom{font-size:var(--font-xs);color:var(--text-3);margin-bottom:4px}
+.gray-box{background:#f5f5f5;border-radius:var(--radius);padding:16px}
+.gray-tag{background:#f5f5f5;border-radius:var(--radius-xs);padding:2px 6px;font-size:var(--font-xs)}
+.text-primary-bold{color:var(--primary);font-weight:700}
+.text-accent-bold{color:var(--accent);font-weight:600}
+.text-success-bold{color:var(--success);font-weight:600}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:var(--font-lg);font-weight:700}
+.card-pad{padding:24px 32px;min-height:220px;display:flex;flex-direction:column}
+.img-block{width:100%;height:auto;display:block;border-radius:var(--radius)}
+.relative-inline{position:relative;display:inline-block;max-width:90%}
+.overflow-hidden{overflow:hidden}
+.cursor-pointer{cursor:pointer}
+.link-primary{color:var(--primary);cursor:pointer}
+.flex-shrink-0{flex-shrink:0}
+.p-18{padding:18px}
+.text-center{text-align:center}
+.w-full{width:100%}
+.relative{position:relative}
+.rounded-full{border-radius:50%}
+
 /* 响应式 */
 @media(max-width:1100px){
   .asset-grid{grid-template-columns:repeat(3,1fr)}
@@ -929,7 +958,7 @@ function assetCard(a){
       <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:6px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${a.title}</div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div style="font-size:11px;color:#999">
-          <span style="color:#0175cc;cursor:pointer" onclick="event.stopPropagation();STATE.filter.style='${a.style}';navigate('home')">${a.style}</span>
+          <span class="link-primary" onclick="event.stopPropagation();STATE.filter.style='${a.style}';navigate('home')">${a.style}</span>
           <span style="margin:0 4px;color:#ccc">·</span>
           <span>${dl}次下载</span>
         </div>
@@ -965,7 +994,7 @@ function assetCard(a,opts={}){
     <div style="padding:6px 2px 0">
       <div style="font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:2px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="点击查看详情">${a.title}</div>
       <div style="font-size:10px;color:#999;display:flex;align-items:center;flex-wrap:wrap;gap:2px">
-        <span style="color:#0175cc;cursor:pointer" onclick="event.stopPropagation();STATE.filter.style='${a.style}';render()">${a.style}</span>
+        <span class="link-primary" onclick="event.stopPropagation();STATE.filter.style='${a.style}';render()">${a.style}</span>
         <span style="color:#ccc">·</span>
         <span style="color:#FB5454;cursor:pointer" onclick="event.stopPropagation();STATE.filter.platform='${a.platform}';render()">${a.platform}</span>
         <span style="color:#ccc">·</span>
@@ -1222,7 +1251,7 @@ function renderHome(){
           <p style="font-size:14px;color:rgba(255,255,255,.8);margin:0;line-height:1.7">下载后为 4K 透明 PNG，含 POD 商用授权，一键上传到 Temu / Etsy / 亚马逊店铺即可印制销售。</p>
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-shrink:0">
-          <div style="display:flex;gap:8px">
+          <div class="flex-gap">
             ${ASSETS.slice(0,4).map(a=>`<div style="width:52px;height:52px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid rgba(255,255,255,.3)"><img src="${a.image}" style="max-width:80%;max-height:80%;object-fit:contain"/></div>`).join('')}
           </div>
           <button style="background:#fff;color:#0175cc;border:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap" onclick="alert('原型演示：跳转注册页面')">立即注册免费下载</button>
@@ -1241,17 +1270,17 @@ function renderHome(){
         <div>
           <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px">产品</div>
           <div style="font-size:12px;line-height:2">
-            <div style="cursor:pointer" onclick="navigate('home')">印花素材</div>
-            <div style="cursor:pointer" onclick="navigate('recharge')">点数充值</div>
-            <div style="cursor:pointer" onclick="navigate('profile')">我的下载</div>
+            <div class="cursor-pointer" onclick="navigate('home')">印花素材</div>
+            <div class="cursor-pointer" onclick="navigate('recharge')">点数充值</div>
+            <div class="cursor-pointer" onclick="navigate('profile')">我的下载</div>
           </div>
         </div>
         <div>
           <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px">帮助</div>
           <div style="font-size:12px;line-height:2">
-            <div style="cursor:pointer" onclick="navigate('help')">使用教程</div>
-            <div style="cursor:pointer" onclick="navigate('license')">商用授权说明</div>
-            <div style="cursor:pointer" onclick="navigate('help')">常见问题</div>
+            <div class="cursor-pointer" onclick="navigate('help')">使用教程</div>
+            <div class="cursor-pointer" onclick="navigate('license')">商用授权说明</div>
+            <div class="cursor-pointer" onclick="navigate('help')">常见问题</div>
           </div>
         </div>
         <div>
@@ -1290,31 +1319,31 @@ function renderDetail(){
           <!-- 左侧垂直tab -->
           <div style="width:130px;flex-shrink:0;border-right:1px solid var(--border-light);display:flex;flex-direction:column;background:var(--bg-soft)">
             <div class="vtab ${STATE.mockupTab==='tshirt'?'active':''}" onclick="STATE.mockupTab='tshirt';render()" style="padding:16px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;${STATE.mockupTab==='tshirt'?'background:#fff;border-left-color:var(--primary);color:var(--primary);font-weight:600':'color:var(--text-2)'}">
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="flex-center-gap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
                 T恤
               </div>
             </div>
             <div class="vtab ${STATE.mockupTab==='hoodie'?'active':''}" onclick="STATE.mockupTab='hoodie';render()" style="padding:16px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;${STATE.mockupTab==='hoodie'?'background:#fff;border-left-color:var(--primary);color:var(--primary);font-weight:600':'color:var(--text-2)'}">
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="flex-center-gap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C8 2 6 4 6 6v2H3l3 4v10h12V12l3-4h-3V6c0-2-2-4-6-4z"/><circle cx="12" cy="6" r="2"/></svg>
                 卫衣
               </div>
             </div>
             <div class="vtab ${STATE.mockupTab==='mug'?'active':''}" onclick="STATE.mockupTab='mug';render()" style="padding:16px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;${STATE.mockupTab==='mug'?'background:#fff;border-left-color:var(--primary);color:var(--primary);font-weight:600':'color:var(--text-2)'}">
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="flex-center-gap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
                 马克杯
               </div>
             </div>
             <div class="vtab ${STATE.mockupTab==='pillow'?'active':''}" onclick="STATE.mockupTab='pillow';render()" style="padding:16px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;${STATE.mockupTab==='pillow'?'background:#fff;border-left-color:var(--primary);color:var(--primary);font-weight:600':'color:var(--text-2)'}">
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="flex-center-gap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M8 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2"/></svg>
                 抱枕
               </div>
             </div>
             <div class="vtab ${STATE.mockupTab==='original'?'active':''}" onclick="STATE.mockupTab='original';render()" style="padding:16px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;${STATE.mockupTab==='original'?'background:#fff;border-left-color:var(--primary);color:var(--primary);font-weight:600':'color:var(--text-2)'}">
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="flex-center-gap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 原图预览
               </div>
@@ -1327,11 +1356,11 @@ function renderDetail(){
           <!-- 右侧预览内容 -->
           <div style="flex:1;min-width:0;background:#fff">
             ${STATE.mockupTab==='tshirt'?`
-              <div style="padding:24px 32px;min-height:220px;display:flex;flex-direction:column">
+              <div class="card-pad">
                 <!-- 主图：模特底图+图案叠加 -->
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;margin-bottom:16px;padding:16px;position:relative;overflow:hidden">
-                  <div style="position:relative;display:inline-block;max-width:90%">
-                    <img src="${MODELS[STATE.detailModel].url}" style="width:100%;height:auto;display:block;border-radius:8px">
+                  <div class="relative-inline">
+                    <img src="${MODELS[STATE.detailModel].url}" class="img-block">
                     <img src="${a.image}" style="position:absolute;top:${MODELS[STATE.detailModel].top};left:${MODELS[STATE.detailModel].left};transform:translate(-50%,-50%);width:${MODELS[STATE.detailModel].width};max-width:200px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))">
                   </div>
                 </div>
@@ -1346,10 +1375,10 @@ function renderDetail(){
               </div>
             `:''}
             ${STATE.mockupTab==='hoodie'?`
-              <div style="padding:24px 32px;min-height:220px;display:flex;flex-direction:column">
+              <div class="card-pad">
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;margin-bottom:16px;padding:16px;position:relative;overflow:hidden">
-                  <div style="position:relative;display:inline-block;max-width:90%">
-                    <img src="${PRODUCTMODELS.hoodie.url}" style="width:100%;height:auto;display:block;border-radius:8px">
+                  <div class="relative-inline">
+                    <img src="${PRODUCTMODELS.hoodie.url}" class="img-block">
                     <img src="${a.image}" style="position:absolute;top:${PRODUCTMODELS.hoodie.top};left:${PRODUCTMODELS.hoodie.left};transform:translate(-50%,-50%);width:${PRODUCTMODELS.hoodie.width};max-width:180px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
                   </div>
                 </div>
@@ -1357,10 +1386,10 @@ function renderDetail(){
               </div>
             `:''}
             ${STATE.mockupTab==='mug'?`
-              <div style="padding:24px 32px;min-height:220px;display:flex;flex-direction:column">
+              <div class="card-pad">
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;margin-bottom:16px;padding:16px;position:relative;overflow:hidden">
-                  <div style="position:relative;display:inline-block;max-width:90%">
-                    <img src="${PRODUCTMODELS.mug.url}" style="width:100%;height:auto;display:block;border-radius:8px">
+                  <div class="relative-inline">
+                    <img src="${PRODUCTMODELS.mug.url}" class="img-block">
                     <img src="${a.image}" style="position:absolute;top:${PRODUCTMODELS.mug.top};left:${PRODUCTMODELS.mug.left};transform:translate(-50%,-50%);width:${PRODUCTMODELS.mug.width};max-width:200px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.1))">
                   </div>
                 </div>
@@ -1368,10 +1397,10 @@ function renderDetail(){
               </div>
             `:''}
             ${STATE.mockupTab==='pillow'?`
-              <div style="padding:24px 32px;min-height:220px;display:flex;flex-direction:column">
+              <div class="card-pad">
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;margin-bottom:16px;padding:16px;position:relative;overflow:hidden">
-                  <div style="position:relative;display:inline-block;max-width:90%">
-                    <img src="${PRODUCTMODELS.pillow.url}" style="width:100%;height:auto;display:block;border-radius:8px">
+                  <div class="relative-inline">
+                    <img src="${PRODUCTMODELS.pillow.url}" class="img-block">
                     <img src="${a.image}" style="position:absolute;top:${PRODUCTMODELS.pillow.top};left:${PRODUCTMODELS.pillow.left};transform:translate(-50%,-50%);width:${PRODUCTMODELS.pillow.width};max-width:280px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))">
                   </div>
                 </div>
@@ -1379,9 +1408,9 @@ function renderDetail(){
               </div>
             `:''}
             ${STATE.mockupTab==='original'?`
-              <div style="padding:24px 32px;min-height:220px;display:flex;flex-direction:column">
+              <div class="card-pad">
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:250px">
-                  <div style="text-align:center">
+                  <div class="text-center">
                     <div class="checker" style="width:320px;height:320px;border-radius:12px;border:1px solid #e0e0e0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.08)">
                       <img src="${a.image}" alt="${a.title}" style="max-width:80%;max-height:80%;object-fit:contain;display:block">
                     </div>
@@ -1420,7 +1449,7 @@ function renderDetail(){
           ${HOTDATA[a.id]?`
           <div style="margin:14px 0;padding:14px 16px;background:linear-gradient(135deg,#fff0f0 0%,#ffe8e8 100%);border:1px solid #ffccc7;border-radius:10px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="flex-center-gap">
                 <span style="font-size:12px;font-weight:700;color:#cf1322">🔥 热销数据</span>
                 <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#FB5454;color:#fff;font-weight:600">${a.platform}${HOTDATA[a.id].period} #${HOTDATA[a.id].rank}</span>
               </div>
@@ -1478,19 +1507,19 @@ function renderDetail(){
             <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text-1)">购买后你将获得</div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-2);line-height:1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" class="flex-shrink-0" style="margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>想要这个设计，<strong>购买一次无限次下载</strong></span>
               </div>
               <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-2);line-height:1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" class="flex-shrink-0" style="margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>每次下载均可获得<strong>高级版及POD商业授权</strong></span>
               </div>
               <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-2);line-height:1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" class="flex-shrink-0" style="margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg>
                 <span><strong>完整创作者设计套件</strong>访问权限</span>
               </div>
               <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-3);line-height:1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2.5" class="flex-shrink-0" style="margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <span>即将推出 - <strong>专属会员活动</strong></span>
               </div>
             </div>
@@ -1500,7 +1529,7 @@ function renderDetail(){
           </div>
         </div>
 
-        <div class="card" style="padding:18px">
+        <div class="card" class="p-18">
           <div class="license-box" style="margin-bottom:0;background:transparent;padding:0">
             <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>你拿到的授权</h4>
             <ul>
@@ -1512,7 +1541,7 @@ function renderDetail(){
           </div>
         </div>
 
-        <div class="card" style="padding:18px">
+        <div class="card" class="p-18">
           <h4 style="font-size:13px;font-weight:700;margin-bottom:10px">文件参数</h4>
           <div class="file-specs">
             <div class="row"><span>格式</span><span>PNG（透明背景）</span></div>
@@ -1571,10 +1600,10 @@ function renderRecharge(){
     <div class="card" style="padding:20px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">充值前看一眼</h3>
       <div style="font-size:13px;color:var(--text-2);line-height:2">
-        <div style="display:flex;gap:8px"><span style="color:var(--primary);font-weight:700">1.</span>点数永久有效，不会过期清零，什么时候用都行</div>
-        <div style="display:flex;gap:8px"><span style="color:var(--primary);font-weight:700">2.</span>微信支付宝都行，人民币结算，不用外币卡</div>
-        <div style="display:flex;gap:8px"><span style="color:var(--primary);font-weight:700">3.</span>付完点数秒到，下载记录和授权凭证在"我的下载"里查</div>
-        <div style="display:flex;gap:8px"><span style="color:var(--primary);font-weight:700">4.</span>充多了用不完没事，一直有效；有问题找客服原路退</div>
+        <div class="flex-gap"><span class="text-primary-bold">1.</span>点数永久有效，不会过期清零，什么时候用都行</div>
+        <div class="flex-gap"><span class="text-primary-bold">2.</span>微信支付宝都行，人民币结算，不用外币卡</div>
+        <div class="flex-gap"><span class="text-primary-bold">3.</span>付完点数秒到，下载记录和授权凭证在"我的下载"里查</div>
+        <div class="flex-gap"><span class="text-primary-bold">4.</span>充多了用不完没事，一直有效；有问题找客服原路退</div>
       </div>
     </div>
 
@@ -1639,32 +1668,32 @@ function renderProfile(){
       </div>
       <div>
         ${STATE.profileTab==='downloads'?`
-          <div style="font-size:18px;font-weight:700;margin-bottom:16px">我的下载</div>
-          <div class="card" style="overflow:hidden"><table class="dtable">
+          <div class="section-title" style="margin-bottom:16px">我的下载</div>
+          <div class="card" class="overflow-hidden"><table class="dtable">
             <thead><tr><th>印花名称</th><th>消耗</th><th>下载时间</th><th>授权编号</th><th>操作</th></tr></thead>
             <tbody>${DOWNLOADS.map(d=>`<tr>
               <td style="max-width:280px">${d.assetTitle}</td>
-              <td><span style="color:var(--accent);font-weight:600">${d.cost}点</span></td>
+              <td><span class="text-accent-bold">${d.cost}点</span></td>
               <td>${d.time}</td>
               <td><code style="background:var(--bg-soft);padding:2px 7px;border-radius:4px;font-size:11px">${d.auth}</code></td>
               <td><button class="btn btn-outline btn-sm" onclick="toast('授权凭证PDF已开始下载')">导出凭证</button></td>
             </tr>`).join('')}</tbody>
           </table></div>`:''}
         ${STATE.profileTab==='recharge'?`
-          <div style="font-size:18px;font-weight:700;margin-bottom:16px">充值记录</div>
-          <div class="card" style="overflow:hidden"><table class="dtable">
+          <div class="section-title" style="margin-bottom:16px">充值记录</div>
+          <div class="card" class="overflow-hidden"><table class="dtable">
             <thead><tr><th>订单号</th><th>套餐</th><th>金额</th><th>到账</th><th>时间</th><th>状态</th></tr></thead>
             <tbody>${RECHARGES.map(r=>`<tr>
               <td><code style="background:var(--bg-soft);padding:2px 7px;border-radius:4px;font-size:11px">${r.id}</code></td>
               <td>${r.pkg}</td><td style="font-weight:600">¥${r.amount}</td>
-              <td><span style="color:var(--accent);font-weight:600">+${r.points}</span></td>
+              <td><span class="text-accent-bold">+${r.points}</span></td>
               <td>${r.time}</td><td><span class="tag tag-green">${r.status}</span></td>
             </tr>`).join('')}</tbody>
           </table></div>`:''}
         ${STATE.profileTab==='auth'?`
-          <div style="font-size:18px;font-weight:700;margin-bottom:16px">商用授权凭证</div>
+          <div class="section-title" style="margin-bottom:16px">商用授权凭证</div>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
-            ${DOWNLOADS.map(d=>`<div class="card" style="padding:18px">
+            ${DOWNLOADS.map(d=>`<div class="card" class="p-18">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
                 <div style="width:36px;height:36px;border-radius:8px;background:var(--primary-light);display:flex;align-items:center;justify-content:center">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -1696,12 +1725,12 @@ function renderLogin(){
       </div>
       <div class="card" style="padding:28px">
         <div style="margin-bottom:16px">
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">手机号</label>
+          <label class="form-label">手机号</label>
           <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
         </div>
         <div style="margin-bottom:20px">
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">验证码</label>
-          <div style="display:flex;gap:8px">
+          <label class="form-label">验证码</label>
+          <div class="flex-gap">
             <input type="text" id="loginCode" placeholder="6位验证码" maxlength="6" style="flex:1;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
             <button id="sendCodeBtn" onclick="sendVerifyCode()" style="padding:0 16px;background:#E6F2FB;color:#0175cc;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;min-width:100px">获取验证码</button>
           </div>
@@ -1716,7 +1745,7 @@ function renderLogin(){
           </div>
         </div>
       </div>
-      <p style="text-align:center;font-size:11px;color:#bbb;margin-top:16px;line-height:1.6">登录即表示同意<a style="color:#0175cc;cursor:pointer">《用户协议》</a>和<a style="color:#0175cc;cursor:pointer">《隐私政策》</a></p>
+      <p style="text-align:center;font-size:11px;color:#bbb;margin-top:16px;line-height:1.6">登录即表示同意<a class="link-primary">《用户协议》</a>和<a class="link-primary">《隐私政策》</a></p>
     </div>
   </div>`;
 }
@@ -1782,7 +1811,7 @@ function renderLicense(){
     <div class="card" style="padding:28px;margin-bottom:20px"><h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;display:flex;align-items:center;gap:8px"><span style="color:#52c41a">✓</span> 允许的使用方式</h3><ul style="font-size:13px;color:#555;line-height:2;margin:0;padding-left:20px"><li>将图案印制在<strong>T恤、卫衣、长袖、背心</strong>等服装类POD商品上销售</li><li>将图案印制在<strong>马克杯、保温杯、酒瓶</strong>等饮品类POD商品上销售</li><li>将图案印制在<strong>抱枕、帆布包、毛巾、毯子</strong>等家居类POD商品上销售</li><li>将图案印制在<strong>贴纸、海报、明信片、笔记本</strong>等纸品类POD商品上销售</li><li>将图案用于<strong>手机壳、鼠标垫、围裙、帽子</strong>等配饰类POD商品上销售</li><li>在Temu、Etsy、亚马逊、Shopify、Redbubble等<strong>所有主流POD平台</strong>使用</li><li>对图案进行<strong>颜色调整、尺寸缩放、添加文字</strong>等二次编辑后使用</li></ul></div>
     <div class="card" style="padding:28px;margin-bottom:20px"><h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;display:flex;align-items:center;gap:8px"><span style="color:#F53F3F">✗</span> 禁止的使用方式</h3><ul style="font-size:13px;color:#555;line-height:2;margin:0;padding-left:20px"><li><strong>禁止转售源文件</strong>：不得将PNG源文件在任何素材平台、社群、网站上二次销售或分发</li><li><strong>禁止批量打包</strong>：不得将多个图案打包后作为素材包出售</li><li><strong>禁止NFT铸造</strong>：不得将图案铸造为NFT数字藏品进行销售</li><li><strong>禁止商标注册</strong>：不得将图案注册为商标、Logo或品牌标识</li><li><strong>禁止违法用途</strong>：不得将图案用于违法、违规、侵权或伤害他人的商品</li></ul></div>
     <div class="card" style="padding:28px;margin-bottom:20px;background:#f0f7ff;border-color:#b3d4ff"><h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 12px">授权凭证</h3><p style="font-size:13px;color:#555;line-height:1.8;margin:0 0 12px">每次下载后，系统会自动生成唯一授权编号，可在「我的下载」中查看和导出PDF授权证书，用于平台投诉申诉或版权证明。</p><div style="background:#fff;border-radius:8px;padding:14px 18px;font-size:12px;color:#666;font-family:monospace;line-height:1.8">授权编号：PV-2026-XXXXXX-XXXX<br>授权类型：POD商用永久授权<br>授权范围：全球 / 全品类POD商品<br>生效日期：下载日期</div></div>
-    <div style="text-align:center;font-size:12px;color:#999;line-height:1.8">如有授权相关疑问，请联系：<a style="color:#0175cc;cursor:pointer">license@printhunt.com</a><br>本授权说明最终解释权归 PrintHunt 所有</div>
+    <div style="text-align:center;font-size:12px;color:#999;line-height:1.8">如有授权相关疑问，请联系：<a class="link-primary">license@printhunt.com</a><br>本授权说明最终解释权归 PrintHunt 所有</div>
   </div></div>`;
 }
 
@@ -1925,14 +1954,14 @@ function renderAdAssets(){
     <div class="admin-head"><h1>素材库管理</h1>
       <div class="ha"><div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:0 10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86909C" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input style="border:none;padding:8px 0;font-size:13px;width:160px" placeholder="搜ID或标题"></div><button class="btn btn-primary btn-sm">批量编辑</button></div>
     </div>
-    <div class="card" style="overflow:hidden"><table class="dtable">
+    <div class="card" class="overflow-hidden"><table class="dtable">
       <thead><tr><th>预览</th><th>标题</th><th>平台</th><th>风格</th><th>点数</th><th>下载量</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>${ASSETS.map(a=>`<tr>
         <td><div style="width:44px;height:36px;background:var(--bg-soft);border-radius:4px;display:flex;align-items:center;justify-content:center"><div style="width:70%;height:80%">${tshirtSVG(a)}</div></div></td>
         <td style="max-width:200px;font-size:12px">${a.title}</td>
         <td><span class="tag tag-blue">${a.platform}</span></td>
         <td><span class="tag tag-gray">${a.style}</span></td>
-        <td style="color:var(--accent);font-weight:600">${a.cost}</td>
+        <td class="text-accent-bold">${a.cost}</td>
         <td>${Math.floor(Math.random()*800)+50}</td>
         <td><span class="tag tag-green">已上架</span></td>
         <td><button class="btn btn-ghost btn-sm" onclick="toast('打开编辑')">编辑</button><button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已下架')">下架</button></td>
@@ -1976,24 +2005,24 @@ function renderAdCollect(){
       <h3 style="margin:0 0 16px">采集任务配置</h3>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">采集平台（可多选）</label>
+          <label class="form-label">采集平台（可多选）</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             ${['Temu','Etsy','Shein'].map((p,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:#333;cursor:pointer"><input type="checkbox" checked style="accent-color:#0175cc">${p}</label>`).join('')}
             <span style="font-size:11px;color:#ccc;text-decoration:line-through">TikTok（暂未启用）</span>
           </div>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">榜单周期</label>
+          <label class="form-label">榜单周期</label>
           <select style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px">
             <option>日榜</option><option>周榜</option><option>月榜</option>
           </select>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">单次采集上限（条）</label>
+          <label class="form-label">单次采集上限（条）</label>
           <input type="number" value="30" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;box-sizing:border-box">
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">定时采集</label>
+          <label class="form-label">定时采集</label>
           <div style="display:flex;align-items:center;gap:8px;padding-top:4px">
             <label style="position:relative;display:inline-block;width:36px;height:20px;cursor:pointer">
               <input type="checkbox" checked style="opacity:0;width:0;height:0">
@@ -2005,7 +2034,7 @@ function renderAdCollect(){
         </div>
       </div>
       <div style="margin-bottom:16px">
-        <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">POD热门搜索关键词（每行一个，采集时随机选取）</label>
+        <label class="form-label">POD热门搜索关键词（每行一个，采集时随机选取）</label>
         <textarea rows="4" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;box-sizing:border-box;font-family:monospace;resize:vertical">graphic tee
 vintage t shirt design
 funny slogan shirt
@@ -2016,7 +2045,7 @@ boho minimalist tee
 western country shirt
 halloween spooky design
 christmas holiday tee</textarea>
-        <div style="font-size:11px;color:#999;margin-top:4px">已预设10个POD垂直赛道热门关键词，可自行增删</div>
+        <div class="hint-text-top">已预设10个POD垂直赛道热门关键词，可自行增删</div>
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary btn-sm" onclick="toast('采集任务已提交，Apify正在执行，完成后Webhook自动回调落库')">提交采集任务</button>
@@ -2028,7 +2057,7 @@ christmas holiday tee</textarea>
     <div class="chart-card" style="margin-bottom:24px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <h3 style="margin:0">采集历史记录</h3>
-        <div style="display:flex;gap:8px">
+        <div class="flex-gap">
           <select style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px">
             <option>全部平台</option><option>Temu</option><option>Etsy</option><option>Shein</option><option>TikTok</option>
           </select>
@@ -2040,7 +2069,7 @@ christmas holiday tee</textarea>
       <table class="dtable">
         <thead><tr><th>任务ID</th><th>Apify runId</th><th>平台</th><th>周期</th><th>采集数</th><th>成功/失败</th><th>耗时</th><th>状态</th><th>采集时间</th><th>失败原因</th><th>操作</th></tr></thead>
         <tbody>${COLLECT_HISTORY.map(h=>`<tr>
-          <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px">${h.id}</code></td>
+          <td><code class="gray-tag">${h.id}</code></td>
           <td><code style="background:#f0f7ff;padding:2px 6px;border-radius:4px;font-size:11px;color:#0175cc">${h.runId}</code></td>
           <td><span class="tag tag-blue">${h.platform}</span></td>
           <td>${h.period}</td>
@@ -2061,7 +2090,7 @@ christmas holiday tee</textarea>
     <div class="chart-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <h3 style="margin:0">采集素材库（原始热销图案 · 待AI变体处理）</h3>
-        <div style="display:flex;gap:8px">
+        <div class="flex-gap">
           <span class="tag tag-green">已变体 ${items.filter(i=>i.status==='已变体').length}</span>
           <span class="tag tag-orange">待变体 ${items.filter(i=>i.status==='待变体').length}</span>
           <span class="tag tag-gray">待审核 ${items.filter(i=>i.status==='待审核').length}</span>
@@ -2105,28 +2134,28 @@ function renderAdSettings(){
       <h3 style="margin:0 0 16px">API 连接配置</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">Apify API Token</label>
-          <div style="display:flex;gap:8px">
+          <label class="form-label">Apify API Token</label>
+          <div class="flex-gap">
             <input type="password" value="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
             <button class="btn btn-outline btn-sm" onclick="toast('Token已复制到剪贴板')">显示</button>
           </div>
-          <div style="font-size:11px;color:#999;margin-top:6px">在 Apify 控制台 → Settings → Integrations 中获取</div>
+          <div class="hint-text" style="margin-top:6px">在 Apify 控制台 → Settings → Integrations 中获取</div>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">Webhook 回调地址</label>
-          <div style="display:flex;gap:8px">
+          <label class="form-label">Webhook 回调地址</label>
+          <div class="flex-gap">
             <input type="text" value="https://api.printhunt.com/webhook/apify/collect" readonly style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;background:#f5f5f5">
             <button class="btn btn-outline btn-sm" onclick="toast('回调地址已复制')">复制</button>
           </div>
-          <div style="font-size:11px;color:#999;margin-top:6px">Apify任务完成后自动回调此地址，落库采集结果</div>
+          <div class="hint-text" style="margin-top:6px">Apify任务完成后自动回调此地址，落库采集结果</div>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">GitHub Token（用于后台触发采集/变体工作流）</label>
-          <div style="display:flex;gap:8px">
+          <label class="form-label">GitHub Token（用于后台触发采集/变体工作流）</label>
+          <div class="flex-gap">
             <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${getGithubToken()}" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
             <button class="btn btn-outline btn-sm" onclick="saveGithubToken()">保存</button>
           </div>
-          <div style="font-size:11px;color:#999;margin-top:6px">仅保存在本地浏览器，用于调用GitHub API触发Actions。GitHub → Settings → Developer settings → Personal access tokens</div>
+          <div class="hint-text" style="margin-top:6px">仅保存在本地浏览器，用于调用GitHub API触发Actions。GitHub → Settings → Developer settings → Personal access tokens</div>
         </div>
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:6px;display:flex;align-items:center;gap:8px">
@@ -2140,9 +2169,9 @@ function renderAdSettings(){
       <table class="dtable">
         <thead><tr><th>平台</th><th>Actor ID</th><th>Actor 名称</th><th>单次成本估算</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <tr><td><span class="tag tag-blue">Temu</span></td><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px">web.harvester~temu-scraper</code></td><td>Temu Product Scraper</td><td>~$0.30 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag tag-orange">Etsy</span></td><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px">epctex~etsy-scraper</code></td><td>Etsy Scraper</td><td>~$0.45 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag" style="background:#ff4d4f;color:#fff">Shein</span></td><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px">shahidirfan~shein-product-scraper</code></td><td>Shein Product Scraper</td><td>~$0.35 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
+          <tr><td><span class="tag tag-blue">Temu</span></td><td><code class="gray-tag">web.harvester~temu-scraper</code></td><td>Temu Product Scraper</td><td>~$0.30 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
+          <tr><td><span class="tag tag-orange">Etsy</span></td><td><code class="gray-tag">epctex~etsy-scraper</code></td><td>Etsy Scraper</td><td>~$0.45 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
+          <tr><td><span class="tag" style="background:#ff4d4f;color:#fff">Shein</span></td><td><code class="gray-tag">shahidirfan~shein-product-scraper</code></td><td>Shein Product Scraper</td><td>~$0.35 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
           <tr><td><span class="tag tag-gray" style="opacity:0.5">TikTok</span></td><td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px;opacity:0.5">clockworks~tiktok-scraper</code></td><td>TikTok Scraper（视频）</td><td>-</td><td><span class="tag tag-gray">暂未启用</span></td><td><button class="btn btn-outline btn-sm" disabled style="opacity:0.5">测试</button></td></tr>
         </tbody>
       </table>
@@ -2151,20 +2180,20 @@ function renderAdSettings(){
     <div class="chart-card" style="margin-bottom:24px">
       <h3 style="margin:0 0 16px">额度使用与告警</h3>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
-        <div style="background:#f5f5f5;border-radius:8px;padding:16px">
-          <div style="font-size:11px;color:#999;margin-bottom:4px">本月套餐额度</div>
+        <div class="gray-box">
+          <div class="hint-text-bottom">本月套餐额度</div>
           <div style="font-size:22px;font-weight:800;color:#1a1a1a">$50.00</div>
         </div>
-        <div style="background:#f5f5f5;border-radius:8px;padding:16px">
-          <div style="font-size:11px;color:#999;margin-bottom:4px">已使用</div>
+        <div class="gray-box">
+          <div class="hint-text-bottom">已使用</div>
           <div style="font-size:22px;font-weight:800;color:#FB5454">$7.50</div>
         </div>
-        <div style="background:#f5f5f5;border-radius:8px;padding:16px">
-          <div style="font-size:11px;color:#999;margin-bottom:4px">剩余额度</div>
+        <div class="gray-box">
+          <div class="hint-text-bottom">剩余额度</div>
           <div style="font-size:22px;font-weight:800;color:#52c41a">$42.50</div>
         </div>
-        <div style="background:#f5f5f5;border-radius:8px;padding:16px">
-          <div style="font-size:11px;color:#999;margin-bottom:4px">本月采集条数</div>
+        <div class="gray-box">
+          <div class="hint-text-bottom">本月采集条数</div>
           <div style="font-size:22px;font-weight:800;color:#0175cc">1,453</div>
         </div>
       </div>
@@ -2178,14 +2207,14 @@ function renderAdSettings(){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">额度告警阈值（低于此值发送邮件提醒）</label>
-          <div style="display:flex;align-items:center;gap:8px">
+          <label class="form-label">额度告警阈值（低于此值发送邮件提醒）</label>
+          <div class="flex-center-gap">
             <input type="number" value="10" style="width:80px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px">
             <span style="font-size:12px;color:#999">美元</span>
           </div>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">告警通知邮箱</label>
+          <label class="form-label">告警通知邮箱</label>
           <input type="email" value="admin@printhunt.com" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
         </div>
       </div>
@@ -2195,23 +2224,23 @@ function renderAdSettings(){
       <h3 style="margin:0 0 16px">采集参数配置</h3>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">默认单次采集上限</label>
+          <label class="form-label">默认单次采集上限</label>
           <input type="number" value="200" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
-          <div style="font-size:11px;color:#999;margin-top:4px">防止单次任务消耗过多额度</div>
+          <div class="hint-text-top">防止单次任务消耗过多额度</div>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">失败重试次数</label>
+          <label class="form-label">失败重试次数</label>
           <input type="number" value="2" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
-          <div style="font-size:11px;color:#999;margin-top:4px">单条商品采集失败后的重试次数</div>
+          <div class="hint-text-top">单条商品采集失败后的重试次数</div>
         </div>
         <div>
-          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px">代理池配置</label>
+          <label class="form-label">代理池配置</label>
           <select style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px">
             <option>Apify 自动代理（推荐）</option>
             <option>住宅代理</option>
             <option>数据中心代理</option>
           </select>
-          <div style="font-size:11px;color:#999;margin-top:4px">反爬拦截时自动切换IP</div>
+          <div class="hint-text-top">反爬拦截时自动切换IP</div>
         </div>
       </div>
     </div>
@@ -2228,7 +2257,7 @@ function renderAdRanking(){
       <div class="sv" style="font-size:20px">${r.count}</div>
       <div style="font-size:11px;color:var(--text-3)">${r.period} · ${r.last}</div>
     </div>`).join('')}</div>
-    <div class="card" style="overflow:hidden"><table class="dtable">
+    <div class="card" class="overflow-hidden"><table class="dtable">
       <thead><tr><th>平台</th><th>榜单</th><th>采集数</th><th>API来源</th><th>上次同步</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>${RANKINGS.map(r=>`<tr>
         <td><div style="display:flex;align-items:center;gap:7px"><div style="width:8px;height:8px;border-radius:50%;background:${r.color}"></div>${r.platform}</div></td>
@@ -2259,7 +2288,7 @@ function renderAdTasks(){
         ${['定时触发','拉取榜单API','WD14打标','反向排斥约束','AI变体生成','双存储归档'].map((s,i)=>`<span style="background:${i<4?'var(--primary-light)':'var(--accent-light)'};color:${i<4?'var(--primary)':'var(--accent)'};padding:6px 12px;border-radius:5px;font-weight:600">${i+1}. ${s}</span>${i<5?'<span style="color:var(--text-3)">→</span>':''}`).join('')}
       </div>
     </div>
-    <div class="card" style="padding:18px"><h3 style="font-size:14px;font-weight:700;margin-bottom:14px">任务队列</h3>
+    <div class="card" class="p-18"><h3 style="font-size:14px;font-weight:700;margin-bottom:14px">任务队列</h3>
       ${[...TASKS,...TASKS.slice(0,2).map(t=>({...t,name:t.name+' (历史)',status:'success',progress:100,desc:'已完成'}))].map(t=>`<div class="task-item">
         <div class="ti" style="background:${t.color}18;color:${t.color}">${t.icon}</div>
         <div class="tinfo"><div class="tn">${t.name}</div><div class="td">${t.desc}</div>${t.status==='running'?'<div class="pbar"><div class="pf" style="width:'+t.progress+'%"></div></div>':''}</div>
@@ -2279,11 +2308,11 @@ function renderAdUsers(){
   ];
   return `<div>
     <div class="admin-head"><h1>用户管理</h1></div>
-    <div class="card" style="overflow:hidden"><table class="dtable">
+    <div class="card" class="overflow-hidden"><table class="dtable">
       <thead><tr><th>用户</th><th>手机号</th><th>余额</th><th>下载数</th><th>累计消费</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>${users.map(u=>`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:11px">${u.name.charAt(0)}</div><span style="font-weight:600">${u.name}</span></div></td>
-        <td>${u.phone}</td><td style="color:var(--accent);font-weight:600">${u.points}</td>
+        <td><div class="flex-center-gap"><div class="avatar" style="width:28px;height:28px;font-size:11px">${u.name.charAt(0)}</div><span style="font-weight:600">${u.name}</span></div></td>
+        <td>${u.phone}</td><td class="text-accent-bold">${u.points}</td>
         <td>${u.dl}</td><td>¥${u.spent}</td>
         <td>${u.st==='正常'?'<span class="tag tag-green">正常</span>':'<span class="tag tag-red">已封禁</span>'}</td>
         <td><button class="btn btn-ghost btn-sm" onclick="toast('打开点数调整')">调点数</button>
