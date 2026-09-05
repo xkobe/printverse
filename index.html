@@ -1357,66 +1357,10 @@ function renderHome(){
 
 /* ===== 素材库列表 ===== */
 function renderGallery(){
-  // 首页页面已合并到首页信息流，直接渲染首页
+  // 第一期无独立图库页，复用首页信息流
   return renderHome();
-  const filtered=ASSETS.filter(a=>{
-    if(STATE.filter.platform!=='all'&&a.platform!==STATE.filter.platform)return false;
-    if(STATE.searchKeyword&&!a.title.toLowerCase().includes(STATE.searchKeyword.toLowerCase()))return false;
-    return true;
-  });
-  return `<div class="container">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div class="search-large" style="box-shadow:none;border:1px solid var(--border);max-width:100%;flex:1">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#86909C" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" placeholder="搜英文关键词..." value="${STATE.searchKeyword}" onkeyup="if(event.key==='Enter'){STATE.searchKeyword=this.value;render()}">
-      </div>
-      <select style="padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff">
-        <option>综合排序</option><option>最新上架</option><option>点数最低</option><option>下载最多</option>
-      </select>
-    </div>
-
-    <div class="filter-bar">
-      <div class="filter-row">
-        <div class="filter-label">平台</div>
-        <div class="filter-options">
-          <div class="filter-opt ${STATE.filter.platform==='all'?'active':''}" onclick="STATE.filter.platform='all';render()">全部</div>
-          ${PLATFORMS.map(p=>`<div class="filter-opt ${STATE.filter.platform===p.name?'active':''}" onclick="STATE.filter.platform='${p.name}';render()">${p.name}</div>`).join('')}
-        </div>
-      </div>
-      <div class="filter-row">
-        <div class="filter-label">榜单</div>
-        <div class="filter-options">
-          <div class="filter-opt ${STATE.filter.period==='daily'?'active':''}" onclick="STATE.filter.period='daily';render()">日榜</div>
-          <div class="filter-opt ${STATE.filter.period==='weekly'?'active':''}" onclick="STATE.filter.period='weekly';render()">周榜</div>
-          <div class="filter-opt ${STATE.filter.period==='monthly'?'active':''}" onclick="STATE.filter.period='monthly';render()">月榜</div>
-        </div>
-      </div>
-      <div class="filter-row">
-        <div class="filter-label">风格</div>
-        <div class="filter-options">
-          ${STYLES.map(s=>`<div class="filter-opt ${STATE.filter.style===s?'active':''}" onclick="STATE.filter.style='${s}';render()">${s}</div>`).join('')}
-        </div>
-      </div>
-      <div class="filter-row">
-        <div class="filter-label">题材</div>
-        <div class="filter-options">
-          ${TOPICS.map(t=>`<div class="filter-opt ${STATE.filter.topic===t?'active':''}" onclick="STATE.filter.topic='${t}';render()">${t}</div>`).join('')}
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div style="font-size:13px;color:var(--text-3)">找到 <strong style="color:var(--text-1)">${filtered.length}</strong> 款可用印花</div>
-    </div>
-
-    <div class="asset-grid">
-      ${filtered.map(a=>assetCard(a)).join('')}
-    </div>
-    ${filtered.length===0?`<div style="text-align:center;padding:60px 20px;color:var(--text-3)"><div style="font-size:36px;margin-bottom:12px;opacity:.3"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div><p>没找到合适的，换个关键词或筛选条件试试</p></div>`:''}
-  </div>`;
 }
 
-/* ===== 素材详情 ===== */
 function renderDetail(){
   const id=STATE.routeParams?.id||1;
   const a=ASSETS.find(x=>x.id==id)||ASSETS[0];
