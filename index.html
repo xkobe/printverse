@@ -545,6 +545,21 @@ ul{list-style:none}
 }
 @keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
+/* 管理后台模式：隐藏前端导航 */
+body.admin-mode .topnav{display:none !important;}
+body.admin-mode{background:#f0f2f5;}
+/* 管理员登录页 */
+.admin-login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0175cc 0%,#015a9e 100%);padding:20px;}
+.admin-login-box{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.admin-login-box h2{margin:0 0 8px;font-size:22px;font-weight:800;color:#1a1a1a;}
+.admin-login-box p{margin:0 0 24px;font-size:13px;color:#888;}
+.admin-login-box input{width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px;outline:none;transition:border-color .2s;}
+.admin-login-box input:focus{border-color:#0175cc;}
+.admin-login-box button{width:100%;padding:12px;background:#0175cc;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;}
+.admin-login-box button:hover{background:#015a9e;}
+.admin-login-back{display:block;text-align:center;margin-top:16px;font-size:12px;color:#999;cursor:pointer;text-decoration:none;}
+.admin-login-back:hover{color:#0175cc;}
+
 /* 响应式 */
 @media(max-width:1100px){
   .asset-grid{grid-template-columns:repeat(3,1fr)}
@@ -598,7 +613,7 @@ ul{list-style:none}
 <script>
 /* ===== 数据 ===== */
 const STATE={
-  mode:'user',currentRoute:'home',
+  mode:'user',currentRoute:'home',adminLoggedIn:false,
   user:{name:'张卖家',phone:'138****8888',points:1280},
   selectedPackage:null,selectedPay:'wechat',
   filter:{platform:'all',period:'all',style:'all',topic:'all',date:''},
@@ -724,7 +739,7 @@ async function loadProductsData(force){
   }catch(e){ console.warn('products.json加载失败', e); }
   PRODUCTS_LOADING = false;
   // 如果当前在采集管理页，自动刷新
-  if(typeof render === 'function' && STATE && STATE.page==='admin' && STATE.adminTab==='collect'){
+  if(typeof render === 'function' && STATE && STATE.mode==='admin' && STATE.adminTab==='collect'){
     render();
   }
   return PRODUCTS_DATA;
@@ -824,6 +839,45 @@ function productsToCollectItems(data){
     };
   });
 }
+
+// 管理员权限（独立于前端用户）
+function isAdminLoggedIn(){ return localStorage.getItem('printhunt_admin_auth') === '1'; }
+function adminLogin(pwd){
+  // 原型阶段：固定密码 admin123，生产环境应改为后端验证
+  if(pwd === 'admin123'){
+    localStorage.setItem('printhunt_admin_auth','1');
+    STATE.adminLoggedIn = true;
+    return true;
+  }
+  return false;
+}
+function adminLogout(){
+  localStorage.removeItem('printhunt_admin_auth');
+  STATE.adminLoggedIn = false;
+  STATE.mode = 'user';
+  location.hash = '';
+  render();
+}
+function renderAdminLogin(){
+  return '<div class="admin-login-wrap"><div class="admin-login-box">'
+    + '<div style="text-align:center;margin-bottom:24px"><svg width="48" height="48" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="#0175cc"/><path d="M20 16h14c8 0 14 5 14 13s-6 13-14 13h-6v16H20V16zm8 6v14h6c4 0 7-2.5 7-7s-3-7-7-7h-6z" fill="white"/><circle cx="46" cy="46" r="7" fill="none" stroke="#FB5454" stroke-width="3"/><circle cx="46" cy="46" r="2" fill="#FB5454"/></svg></div>'
+    + '<h2>PrintHunt 管理后台</h2>'
+    + '<p>仅限运营人员登录，与前端卖家账号独立</p>'
+    + '<input type="password" id="adminPwd" placeholder="请输入管理员密码（默认：admin123）">'
+    + '<button onclick="doAdminLogin()">登录后台</button>'
+    + '<a class="admin-login-back" onclick="adminGoHome()">← 返回网站首页</a>'
+    + '</div></div>';
+}
+function doAdminLogin(){
+  const pwd = document.getElementById('adminPwd').value;
+  if(adminLogin(pwd)){
+    toast('登录成功，欢迎回来');
+    render();
+  }else{
+    toast('密码错误，请重试');
+  }
+}
+function adminGoHome(){ location.hash=''; STATE.mode='user'; render(); }
 
 const ADMIN_STATS=[
   {label:'今日新上架',value:'328',change:'+12.5%',up:true},
@@ -1009,8 +1063,20 @@ function assetCard(a,opts={}){
 // 路由解析移到init()中统一处理
 function render(){
   const app=document.getElementById('app');
-  if(STATE.mode==='admin'){app.innerHTML=renderAdmin();}
-  else{
+  // 管理后台模式：隐藏前端导航
+  if(STATE.mode==='admin'){
+    document.body.classList.add('admin-mode');
+  }else{
+    document.body.classList.remove('admin-mode');
+  }
+  // 管理后台权限检查
+  if(STATE.mode==='admin'){
+    if(!isAdminLoggedIn()){
+      app.innerHTML=renderAdminLogin();
+      return;
+    }
+    app.innerHTML=renderAdmin();
+  }else{
     switch(STATE.currentRoute){
       case 'home':app.innerHTML=renderHome();break;
       case 'gallery':app.innerHTML=renderGallery();break;
@@ -1900,6 +1966,10 @@ function renderAdmin(){
       <div class="ami ${STATE.adminTab==='settings'?'active':''}" onclick="STATE.adminTab='settings';render()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Apify配置
       </div>
+      <div style="margin-top:auto;padding:16px;border-top:1px solid #e8e8e8">
+        <div style="font-size:11px;color:#999;margin-bottom:8px">运营人员：admin</div>
+        <button onclick="adminLogout()" style="width:100%;padding:8px;background:#fff;color:#F53F3F;border:1px solid #ffccc7;border-radius:6px;font-size:12px;cursor:pointer;transition:all .2s">退出登录</button>
+      </div>
     </div>
     <div class="admin-main">
       ${STATE.adminTab==='dashboard'?renderAdDashboard():''}
@@ -2411,6 +2481,7 @@ function parseHash(){
   const h=location.hash.slice(1);
   if(h.indexOf('admin')>=0){
     STATE.mode='admin';
+    STATE.adminLoggedIn = isAdminLoggedIn();
     const parts=h.split('/');
     if(parts.length>2 && parts[2]){ STATE.adminTab=parts[2]; }
   }else{
