@@ -1,10 +1,108 @@
 {
-  "updated_at": "2026-09-04T16:04:58.964642",
-  "total": 0,
+  "updated_at": "2026-09-05T08:14:45.067082",
+  "total": 8,
   "by_platform": {
-    "temu": 0,
-    "shein": 0,
-    "etsy": 0
+    "temu": 3,
+    "shein": 2,
+    "etsy": 3
   },
-  "products": []
+  "products": [
+    {
+      "platform": "temu",
+      "title": "100% Unisex Oversized Crew Neck Short Sleeve T-Shirt, Vintage Distressed Figure Print with Forever Blessed Cursive Text, Zen American Streetwear Top for Daily Wear And Trendy Street Outfits",
+      "price": 1202,
+      "image": "https://img.kwcdn.com/product/fancy/1511d1d3-7f09-42ce-955a-c3e33bc5c473.jpg",
+      "url": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=607587126891519&thumb_url=https%3A%2F%2Fimg.kwcdn.com%2Fproduct%2Ffancy%2F1511d1d3-7f09-42ce-955a-c3e33bc5c473.jpg&_web_cover=thumb_url&pic_h=2304&pic_w=1728&spec_id=16062&spec_gallery_id=409964&refer_page_sn=10009&freesia_scene=2&_oak_freesia_scene=2&_oak_rec_ext_1=MTIwMg&_oak_gallery_order=2015319554%2C877150111%2C931254250%2C1370362307&spec_ids=16062,2001,3002,16080&_oak_mp_inf=EP%2Bn%2BbaOk4oBGi42MTNkMjhlMjM1MjBhMTEwOTNhMmYyZDU4NGUwYTNjNV8xNzg4NTk2MDU1MjUwIIfch4WHNA%3D%3D",
+      "sales_tip": "689 sold",
+      "comment": {
+        "goods_score": 4.5,
+        "comment_num_tips": "6"
+      },
+      "keyword": "graphic tee",
+      "local_image": "data/images/temu_000.jpg"
+    },
+    {
+      "platform": "temu",
+      "title": "Men'S Vintage Washed Black Short-Sleeve T-Shirt - Loose Fit with Angel Print, Breathable Summer Casual Shirt, Machine Washable, Everyday Comfort | Retro Pattern Top | Durable Fabric",
+      "price": 1820,
+      "image": "https://img.kwcdn.com/product/fancy/d833353f-b22c-465b-9b5b-5ff1bbfc4dd3.jpg",
+      "url": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601102762220793&thumb_url=https%3A%2F%2Fimg.kwcdn.com%2Fproduct%2Ffancy%2Fd833353f-b22c-465b-9b5b-5ff1bbfc4dd3.jpg&_web_cover=thumb_url&pic_h=1800&pic_w=1350&spec_id=3002&spec_gallery_id=157062&refer_page_sn=10009&freesia_scene=2&_oak_freesia_scene=2&_oak_rec_ext_1=MTgyMA&_oak_gallery_order=606578635%2C2109658894%2C155900431%2C1136629843%2C1777231611&spec_ids=3002&_oak_mp_inf=EPm59qSy1ogBGi42MTNkMjhlMjM1MjBhMTEwOTNhMmYyZDU4NGUwYTNjNV8xNzg4NTk2MDU1MjUwIIjch4WHNA%3D%3D",
+      "sales_tip": "2.5K+ sold",
+      "comment": {
+        "goods_score": 4.8,
+        "comment_num_tips": "144"
+      },
+      "keyword": "graphic tee",
+      "local_image": "data/images/temu_001.jpg"
+    },
+    {
+      "platform": "temu",
+      "title": "Vintage Retro Men'S Crew Neck Short Sleeve T-Shirt, Washed Distressed Texture, Classic DVD Movie Retro Line Letter Graphic Tee for American Street Casual Wear",
+      "price": 1000,
+      "image": "https://img.kwcdn.com/product/fancy/55e4b7fd-2144-4664-bdbb-644170c7f15d.jpg",
+      "url": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=606154319073488&thumb_url=https%3A%2F%2Fimg.kwcdn.com%2Fproduct%2Ffancy%2F55e4b7fd-2144-4664-bdbb-644170c7f15d.jpg&_web_cover=thumb_url&pic_h=1785&pic_w=1340&spec_id=3002&spec_gallery_id=327919&refer_page_sn=10009&freesia_scene=2&_oak_freesia_scene=2&_oak_rec_ext_1=MTAwMA&_oak_gallery_order=250189981%2C1272852927%2C1159827815%2C1980529084&spec_ids=3002&_oak_mp_inf=ENCh%2BOa06YkBGi42MTNkMjhlMjM1MjBhMTEwOTNhMmYyZDU4NGUwYTNjNV8xNzg4NTk2MDU1MjUwIIjch4WHNA%3D%3D",
+      "sales_tip": "563 sold",
+      "comment": {
+        "goods_score": 4.3,
+        "comment_num_tips": "6"
+      },
+      "keyword": "graphic tee",
+      "local_image": "data/images/temu_002.jpg"
+    },
+    {
+      "platform": "shein",
+      "title": "GLAMSKIN Women's Summer/Autumn Basic Striped Square Neck Short Sleeve Slim Fit Cropped T-Shirt, Casual Sexy Slim Fit Top White",
+      "price": "$7.27",
+      "image": "https://img.ltwebstatic.com/v4/j/spmp/2026/02/24/2d/1771920445e45e3c9af883d07634cc3b67db87d707_thumbnail_405x552.jpg",
+      "url": "https://m.shein.com/us/-p-336573777.html",
+      "sales_tip": "",
+      "comment": "",
+      "keyword": "graphic t shirt",
+      "local_image": "data/images/shein_003.jpg"
+    },
+    {
+      "platform": "shein",
+      "title": "1pc Lace Camisole, Fitted For Dates/Parties/Outings Casual Black Summer",
+      "price": "$10.52",
+      "image": "https://img.ltwebstatic.com/v4/j/spmp/2026/06/23/bb/17822030135b9a15b73409fd7d2ebcdc5d956773b3_thumbnail_405x552.jpg",
+      "url": "https://m.shein.com/us/-p-330574793.html",
+      "sales_tip": "",
+      "comment": "",
+      "keyword": "graphic t shirt",
+      "local_image": "data/images/shein_004.jpg"
+    },
+    {
+      "platform": "etsy",
+      "title": "Christian PNG Bundle, Urban Faith Designs, Modern Christian Streetwear, Bible Verse PNG, Faith Over Fear, Jesus PNG, Christian Sublimation",
+      "price": 2.2,
+      "image": "https://i.etsystatic.com/63902214/r/il/eac3f8/8474009075/il_fullxfull.8474009075_hkeo.jpg",
+      "url": "https://www.etsy.com/listing/4561842215/christian-png-bundle-urban-faith-designs",
+      "sales_tip": "",
+      "comment": "",
+      "keyword": "graphic tee png",
+      "local_image": "data/images/etsy_005.jpg"
+    },
+    {
+      "platform": "etsy",
+      "title": "THE ENTIRE SHOP |  5,000+ Trendy png files and Blank Mock ups Whole Shop Google Drive Lifetime Access Commercial Use",
+      "price": 600,
+      "image": "https://i.etsystatic.com/23273178/r/il/41e431/7992277696/il_fullxfull.7992277696_ta66.jpg",
+      "url": "https://www.etsy.com/listing/1668609870/the-entire-shop-5000-trendy-png-files",
+      "sales_tip": "",
+      "comment": "",
+      "keyword": "graphic tee png",
+      "local_image": "data/images/etsy_006.jpg"
+    },
+    {
+      "platform": "etsy",
+      "title": "Millionaire Quote PNG, 20,000 Dollar Only Design, Funny Rich Quote PNG, Money Lover T-Shirt Design, Sublimation Graphic, Commercial Use.",
+      "price": 5532.3,
+      "image": "https://i.etsystatic.com/44234062/r/il/e92440/8351319504/il_fullxfull.8351319504_h2bt.jpg",
+      "url": "https://www.etsy.com/listing/4551561367/millionaire-quote-png-20000-dollar-only",
+      "sales_tip": "",
+      "comment": "",
+      "keyword": "graphic tee png",
+      "local_image": "data/images/etsy_007.jpg"
+    }
+  ]
 }
