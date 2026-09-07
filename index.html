@@ -250,9 +250,6 @@ ul{list-style:none}
 
 .mockup-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--primary-light)}
 
-.mockup-card 
-.mockup-card 
-
 .detail-sidebar{display:flex;flex-direction:column;gap:14px}
 .detail-info{padding:20px}
 .detail-info h1{font-size:19px;font-weight:700;line-height:1.4;margin-bottom:10px}
@@ -532,9 +529,11 @@ body.admin-mode{background:#f0f2f5;}
   .search-large{padding:10px 14px}
   .search-large input{font-size:var(--font-sm)}
   /* 详情页 */
+  .detail-gallery{flex-direction:column !important}
+  .detail-gallery > div:first-child{width:100% !important;flex-direction:row !important;border-right:none !important;border-bottom:1px solid var(--border-light) !important}
+  .detail-gallery .vtab{padding:10px 8px !important;font-size:var(--font-xs) !important;border-left:none !important;border-bottom:3px solid transparent !important}
+  .detail-gallery .vtab.active{border-bottom-color:var(--primary) !important;background:var(--bg) !important}
   .detail-preview{min-height:300px}
-  .detail-tab-bar{width:100% !important;flex-direction:row !important;height:auto !important}
-  .detail-tab{padding:10px 8px;font-size:var(--font-xs)}
   /* 按钮最小触摸区域 */
   .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
   .btn-sm{min-height:36px}
