@@ -514,16 +514,66 @@ body.admin-mode{background:#f0f2f5;}
   .stat-row{grid-template-columns:repeat(2,1fr)}
   .chart-row{grid-template-columns:1fr}
   .review-grid{grid-template-columns:repeat(2,1fr)}
+  .topnav-inner{padding:0 16px}
+  .container{padding:16px}
 }
 @media(max-width:768px){
-  .topnav-inner{padding:0 14px;gap:10px}
+  .topnav-inner{padding:0 12px;gap:8px;height:52px}
+  .logo span{font-size:var(--font-base)}
   .nav-links{display:none}
-  .container{padding:14px}
-  .search-banner h1{font-size:var(--font-lg)}
-  .asset-grid{grid-template-columns:repeat(2,1fr);gap:12px}
-  .pkg-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .container{padding:12px}
+  .container-narrow{padding:12px}
+  /* 瀑布流移动端2列 */
+  .asset-feed{column-count:2 !important;column-gap:8px !important}
+  .asset-item{margin-bottom:8px !important}
+  /* Hero区域 */
+  .hero h1{font-size:var(--font-xl) !important;line-height:1.3}
+  .hero p{font-size:var(--font-sm)}
+  .search-large{padding:10px 14px}
+  .search-large input{font-size:var(--font-sm)}
+  /* 详情页 */
+  .detail-preview{min-height:300px}
+  .detail-tab-bar{width:100% !important;flex-direction:row !important;height:auto !important}
+  .detail-tab{padding:10px 8px;font-size:var(--font-xs)}
+  /* 按钮最小触摸区域 */
+  .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  .btn-sm{min-height:36px}
+  /* 表格横向滚动 */
+  .dtable-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .dtable{min-width:600px}
+  /* 管理后台 */
   .admin-layout{grid-template-columns:1fr}
   .admin-side{display:none}
+  .admin-main{padding:12px}
+  .stat-row{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-card{padding:12px}
+  /* 筛选栏 */
+  .filter-bar{flex-wrap:wrap;gap:6px}
+  .filter-tag{padding:6px 10px;font-size:var(--font-xs)}
+  /* 卡片 */
+  .card{padding:16px}
+  .card-pad{padding:16px;min-height:auto}
+  /* 字体 */
+  h1{font-size:var(--font-xl)}
+  h2{font-size:var(--font-lg)}
+  h3{font-size:var(--font-md)}
+}
+@media(max-width:480px){
+  /* 小屏手机 */
+  .topnav-inner{padding:0 10px}
+  .container{padding:10px}
+  .asset-feed{column-count:2 !important;column-gap:6px !important}
+  .hero h1{font-size:var(--font-lg) !important}
+  .hero{padding:32px 16px !important}
+  .search-large{padding:8px 12px}
+  .search-large input{font-size:var(--font-xs)}
+  .btn-lg{padding:12px 20px;font-size:var(--font-sm)}
+  .stat-row{grid-template-columns:1fr 1fr;gap:6px}
+  .stat-card .sv{font-size:var(--font-lg)}
+  .detail-info{padding:16px}
+  .mockup-thumb{width:60px;height:60px}
+  /* 底部安全区 */
+  body{padding-bottom:env(safe-area-inset-bottom)}
 }
 </style>
 </head>
@@ -538,16 +588,11 @@ body.admin-mode{background:#f0f2f5;}
     </div>
     <div class="nav-links" id="navLinks">
       <div class="nav-link active" data-route="home" onclick="navigate('home')">首页</div>
-      <div class="nav-link" data-route="recharge" onclick="navigate('recharge')">充值点数</div>
       <div class="nav-link" data-route="profile" onclick="navigate('profile')">我的下载</div>
       <div class="nav-link" data-route="license" onclick="navigate('license')">商用授权</div>
       <div class="nav-link" data-route="help" onclick="navigate('help')">帮助中心</div>
     </div>
     <div class="nav-right">
-      <div class="points-badge" onclick="navigate('recharge')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 15h-1v-1h1v1zm1.5-5.5c-.4.5-1 .9-1.5 1.3-.5.4-.5.7-.5 1.2h-1v-.5c0-.5.2-1 .5-1.3.5-.5 1-.9 1.5-1.3.4-.3.5-.6.5-1 0-.5-.4-.9-1-.9-.5 0-1 .4-1 .9h-1c0-1.1.9-2 2-2s2 .9 2 2c0 .6-.3 1.1-.7 1.5z"/></svg>
-        <span id="navPoints">1,280</span> 点
-      </div>
       <div class="avatar" onclick="navigate('profile')">张</div>
     </div>
   </div>
@@ -559,33 +604,33 @@ body.admin-mode{background:#f0f2f5;}
 /* ===== 数据 ===== */
 const STATE={
   mode:'user',currentRoute:'home',adminLoggedIn:false,
-  user:{name:'张卖家',phone:'138****8888',points:1280},
+  user:{name:'张卖家',phone:'138****8888'},
   selectedPackage:null,selectedPay:'wechat',
   filter:{platform:'all',period:'all',style:'all',topic:'all',date:''},
   searchKeyword:'',adminTab:'dashboard',profileTab:'downloads',mockupTab:'tshirt',detailShirt:'#fff',detailModel:0,loginTab:'login'
 };
 
 const ASSETS=[
-  {id:1,title:'Wolf Head Vintage Outdoor T-Shirt Design PNG',platform:'Temu',period:'daily',style:'复古美式',topic:'动物',cost:15,hot:true,image:'https://aka.doubaocdn.com/s/uNFNyGpV1d',shirt:'#fff',date:'2026-09-03'},
-  {id:2,title:'Sarcasm EU Funny Slogan Quote PNG Transparent',platform:'Etsy',period:'weekly',style:'幽默',topic:'文字',cost:10,hot:true,image:'https://aka.doubaocdn.com/s/xuPP575gx3',shirt:'#2D3436',date:'2026-09-02'},
-  {id:3,title:'Sarcasm US Funny Quote Sublimation Design',platform:'Temu',period:'daily',style:'幽默',topic:'文字',cost:10,hot:false,image:'https://aka.doubaocdn.com/s/NF9WiMpNN2',shirt:'#fff',date:'2026-09-01'},
-  {id:4,title:'Minimalist Mountain Hiking Outdoor PNG Print',platform:'Shein',period:'monthly',style:'极简',topic:'户外',cost:12,hot:false,image:'https://aka.doubaocdn.com/s/49ufMdZF6F',shirt:'#F5F5F5',date:'2026-08-31'},
-  {id:5,title:'Lion Head King Jungle Animal Graphic PNG',platform:'TikTok',period:'daily',style:'暗黑',topic:'动物',cost:18,hot:true,image:'https://aka.doubaocdn.com/s/4QtUEu5ap1',shirt:'#2D3436',date:'2026-08-30'},
-  {id:6,title:'Vintage Lips Retro Pop Art PNG Transparent',platform:'Etsy',period:'weekly',style:'复古',topic:'艺术',cost:15,hot:false,image:'https://aka.doubaocdn.com/s/VL2p2xR1EP',shirt:'#fff',date:'2026-09-02'},
-  {id:7,title:'Football Sunday Game Day Sport PNG Design',platform:'Temu',period:'daily',style:'复古',topic:'运动',cost:12,hot:false,image:'https://aka.doubaocdn.com/s/IBlmEKNXCn',shirt:'#fff',date:'2026-08-29'},
-  {id:8,title:'Moth Floral Gothic Watercolor PNG Art',platform:'Shein',period:'daily',style:'水彩',topic:'花卉',cost:16,hot:false,image:'https://aka.doubaocdn.com/s/OvIRSxAV8C',shirt:'#fff',date:'2026-09-01'},
-  {id:9,title:'Moon Phase Celestial Minimalist PNG Print',platform:'Etsy',period:'weekly',style:'极简',topic:'艺术',cost:14,hot:false,image:'https://aka.doubaocdn.com/s/7wwNEdE8oF',shirt:'#2D3436',date:'2026-08-28'},
-  {id:10,title:'BBQ Grill Master Funny Dad Quote PNG',platform:'Temu',period:'daily',style:'幽默',topic:'节日',cost:10,hot:true,image:'https://aka.doubaocdn.com/s/eU7Rlp6fjX',shirt:'#fff',date:'2026-09-03'},
-  {id:11,title:'Hunting Season Deer Hunter Outdoor PNG',platform:'Temu',period:'monthly',style:'复古',topic:'户外',cost:15,hot:false,image:'https://aka.doubaocdn.com/s/0sZiOxcc4X',shirt:'#2D3436',date:'2026-08-27'},
-  {id:12,title:'Classic Sports Car Retro 80s PNG Design',platform:'TikTok',period:'weekly',style:'复古',topic:'游戏',cost:15,hot:false,image:'https://aka.doubaocdn.com/s/8hXb6cJnTY',shirt:'#fff',date:'2026-08-26'},
-  {id:13,title:'Halloween Spooky Vintage Sublimation PNG',platform:'Etsy',period:'daily',style:'复古',topic:'节日',cost:18,hot:true,image:'https://aka.doubaocdn.com/s/EM07AAnunr',shirt:'#2D3436',date:'2026-09-01'},
-  {id:14,title:'Saturday League Football Fan PNG Print',platform:'Shein',period:'daily',style:'幽默',topic:'运动',cost:12,hot:false,image:'https://aka.doubaocdn.com/s/4OnNzAPPj2',shirt:'#fff',date:'2026-08-25'},
-  {id:15,title:'British Union Jack Vintage Patriotic PNG',platform:'Temu',period:'weekly',style:'复古',topic:'节日',cost:14,hot:false,image:'https://aka.doubaocdn.com/s/oac0yyRew5',shirt:'#fff',date:'2026-08-24'},
-  {id:16,title:'Oktoberfest Beer Festival German PNG',platform:'Etsy',period:'monthly',style:'复古',topic:'节日',cost:16,hot:false,image:'https://aka.doubaocdn.com/s/UMGHVAAIur',shirt:'#fff',date:'2026-09-02'},
-  {id:17,title:'Cruise Life Vacation Funny Slogan PNG',platform:'Temu',period:'daily',style:'幽默',topic:'文字',cost:10,hot:true,image:'https://aka.doubaocdn.com/s/MsMu4s9bQW',shirt:'#fff',date:'2026-08-23'},
-  {id:18,title:'Gaming Controller Retro Gamer PNG Design',platform:'TikTok',period:'weekly',style:'复古',topic:'游戏',cost:15,hot:false,image:'https://aka.doubaocdn.com/s/U6AXUXOQ6X',shirt:'#2D3436',date:'2026-08-22'},
-  {id:19,title:'Mahjong Palm CNY Chinese New Year PNG',platform:'Shein',period:'daily',style:'复古',topic:'节日',cost:18,hot:false,image:'https://aka.doubaocdn.com/s/D3A5hgrzJt',shirt:'#fff',date:'2026-09-01'},
-  {id:20,title:'Robot Duck Cute Cartoon Streetwear PNG',platform:'Etsy',period:'daily',style:'卡通',topic:'动物',cost:12,hot:true,image:'https://aka.doubaocdn.com/s/AFtt3p469n',shirt:'#fff',date:'2026-08-21'},
+  {id:1,title:'Wolf Head Vintage Outdoor T-Shirt Design PNG',platform:'Temu',period:'daily',style:'复古美式',topic:'动物',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/uNFNyGpV1d',shirt:'#fff',date:'2026-09-03'},
+  {id:2,title:'Sarcasm EU Funny Slogan Quote PNG Transparent',platform:'Etsy',period:'weekly',style:'幽默',topic:'文字',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/xuPP575gx3',shirt:'#2D3436',date:'2026-09-02'},
+  {id:3,title:'Sarcasm US Funny Quote Sublimation Design',platform:'Temu',period:'daily',style:'幽默',topic:'文字',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/NF9WiMpNN2',shirt:'#fff',date:'2026-09-01'},
+  {id:4,title:'Minimalist Mountain Hiking Outdoor PNG Print',platform:'Shein',period:'monthly',style:'极简',topic:'户外',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/49ufMdZF6F',shirt:'#F5F5F5',date:'2026-08-31'},
+  {id:5,title:'Lion Head King Jungle Animal Graphic PNG',platform:'TikTok',period:'daily',style:'暗黑',topic:'动物',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/4QtUEu5ap1',shirt:'#2D3436',date:'2026-08-30'},
+  {id:6,title:'Vintage Lips Retro Pop Art PNG Transparent',platform:'Etsy',period:'weekly',style:'复古',topic:'艺术',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/VL2p2xR1EP',shirt:'#fff',date:'2026-09-02'},
+  {id:7,title:'Football Sunday Game Day Sport PNG Design',platform:'Temu',period:'daily',style:'复古',topic:'运动',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/IBlmEKNXCn',shirt:'#fff',date:'2026-08-29'},
+  {id:8,title:'Moth Floral Gothic Watercolor PNG Art',platform:'Shein',period:'daily',style:'水彩',topic:'花卉',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/OvIRSxAV8C',shirt:'#fff',date:'2026-09-01'},
+  {id:9,title:'Moon Phase Celestial Minimalist PNG Print',platform:'Etsy',period:'weekly',style:'极简',topic:'艺术',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/7wwNEdE8oF',shirt:'#2D3436',date:'2026-08-28'},
+  {id:10,title:'BBQ Grill Master Funny Dad Quote PNG',platform:'Temu',period:'daily',style:'幽默',topic:'节日',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/eU7Rlp6fjX',shirt:'#fff',date:'2026-09-03'},
+  {id:11,title:'Hunting Season Deer Hunter Outdoor PNG',platform:'Temu',period:'monthly',style:'复古',topic:'户外',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/0sZiOxcc4X',shirt:'#2D3436',date:'2026-08-27'},
+  {id:12,title:'Classic Sports Car Retro 80s PNG Design',platform:'TikTok',period:'weekly',style:'复古',topic:'游戏',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/8hXb6cJnTY',shirt:'#fff',date:'2026-08-26'},
+  {id:13,title:'Halloween Spooky Vintage Sublimation PNG',platform:'Etsy',period:'daily',style:'复古',topic:'节日',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/EM07AAnunr',shirt:'#2D3436',date:'2026-09-01'},
+  {id:14,title:'Saturday League Football Fan PNG Print',platform:'Shein',period:'daily',style:'幽默',topic:'运动',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/4OnNzAPPj2',shirt:'#fff',date:'2026-08-25'},
+  {id:15,title:'British Union Jack Vintage Patriotic PNG',platform:'Temu',period:'weekly',style:'复古',topic:'节日',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/oac0yyRew5',shirt:'#fff',date:'2026-08-24'},
+  {id:16,title:'Oktoberfest Beer Festival German PNG',platform:'Etsy',period:'monthly',style:'复古',topic:'节日',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/UMGHVAAIur',shirt:'#fff',date:'2026-09-02'},
+  {id:17,title:'Cruise Life Vacation Funny Slogan PNG',platform:'Temu',period:'daily',style:'幽默',topic:'文字',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/MsMu4s9bQW',shirt:'#fff',date:'2026-08-23'},
+  {id:18,title:'Gaming Controller Retro Gamer PNG Design',platform:'TikTok',period:'weekly',style:'复古',topic:'游戏',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/U6AXUXOQ6X',shirt:'#2D3436',date:'2026-08-22'},
+  {id:19,title:'Mahjong Palm CNY Chinese New Year PNG',platform:'Shein',period:'daily',style:'复古',topic:'节日',cost:0,hot:false,image:'https://aka.doubaocdn.com/s/D3A5hgrzJt',shirt:'#fff',date:'2026-09-01'},
+  {id:20,title:'Robot Duck Cute Cartoon Streetwear PNG',platform:'Etsy',period:'daily',style:'卡通',topic:'动物',cost:0,hot:true,image:'https://aka.doubaocdn.com/s/AFtt3p469n',shirt:'#fff',date:'2026-08-21'},
 ];
 
 /* 热销数据（模拟第三方榜单API返回） */
@@ -631,10 +676,10 @@ const PACKAGES=[
 ];
 
 const DOWNLOADS=[
-  {id:'D0901001',assetTitle:'Vintage Sunset Retro T-Shirt Sublimation Design',cost:15,time:'2026-09-01 14:32',auth:'PV-2026-0901-A8F3'},
-  {id:'D0831002',assetTitle:'Funny Dog Mom Quote Pet Lover Graphic PNG',cost:10,time:'2026-08-31 09:15',auth:'PV-2026-0831-B2C7'},
-  {id:'D0830003',assetTitle:'Never Give Up Inspirational Quote Slogan PNG',cost:8,time:'2026-08-30 16:48',auth:'PV-2026-0830-D1E9'},
-  {id:'D0829004',assetTitle:'Cute Cat Coffee Lover Slogan PNG Transparent',cost:10,time:'2026-08-29 11:20',auth:'PV-2026-0829-F4A2'},
+  {id:'D0901001',assetTitle:'Vintage Sunset Retro T-Shirt Sublimation Design',cost:0,time:'2026-09-01 14:32',auth:'PV-2026-0901-A8F3'},
+  {id:'D0831002',assetTitle:'Funny Dog Mom Quote Pet Lover Graphic PNG',cost:0,time:'2026-08-31 09:15',auth:'PV-2026-0831-B2C7'},
+  {id:'D0830003',assetTitle:'Never Give Up Inspirational Quote Slogan PNG',cost:0,time:'2026-08-30 16:48',auth:'PV-2026-0830-D1E9'},
+  {id:'D0829004',assetTitle:'Cute Cat Coffee Lover Slogan PNG Transparent',cost:0,time:'2026-08-29 11:20',auth:'PV-2026-0829-F4A2'},
 ];
 
 const RECHARGES=[
@@ -975,7 +1020,7 @@ function assetCard(a,opts={}){
   const {isFree=true}=opts;
   const dl=a.downloads||(80+a.id*37)%480;
   const hot=HOTDATA[a.id]||{rank:'-',period:'日榜',sales7d:'-',trend:'+'};
-  const btnText=isFree?'免费下载 PNG →':`${a.cost}点下载 PNG →`;
+  const btnText='免费下载 PNG →';
   return `<div style="cursor:pointer;margin-bottom:16px;break-inside:avoid" onclick="navigate('detail',{id:${a.id}})">
     <div style="position:relative;overflow:hidden;border-radius:6px">
       ${isFree?`<span style="position:absolute;top:8px;left:8px;background:var(--success);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;z-index:2">免费</span>`:`<span style="position:absolute;top:8px;left:8px;background:#FB5454;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;z-index:2">${a.cost}点</span>`}
@@ -1118,7 +1163,7 @@ function renderHome(){
     const kw=STATE.searchKeyword.toLowerCase();
     feedSet=feedSet.filter(a=>a.title.toLowerCase().includes(kw)||a.style.toLowerCase().includes(kw)||a.topic.toLowerCase().includes(kw));
   }
-  const freeSet=ASSETS.filter(a=>a.cost===0).slice(0,8);
+  const freeSet=ASSETS.slice(0,8);
   return `<div style="background:#fff;min-height:calc(100vh - 60px)">
     <!-- Hero区 -->
     <div style="background:linear-gradient(180deg,#f8f9ff 0%,#fff 100%);border-bottom:1px solid var(--border-light)">
@@ -1501,7 +1546,7 @@ function renderDetail(){
           </div>`:''}
           <div class="detail-price-row">
             <div><div class="pl">下载消耗</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">一次下载，永久商用授权</div></div>
-            <div class="pv">${a.cost} <span style="font-size:12px;font-weight:400">点</span></div>
+            <div class="pv" style="color:var(--success)">免费</div>
           </div>
           <button class="btn btn-primary btn-block btn-lg" onclick="downloadAsset(${a.id})">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1529,7 +1574,7 @@ function renderDetail(){
             </div>
           </div>
           <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--text-3)">
-            余额 <strong style="color:var(--accent)">${STATE.user.points}</strong> 点 · 下载后剩 ${STATE.user.points-a.cost} 点
+            全部图案免费下载，含POD商用授权
           </div>
         </div>
 
@@ -1571,60 +1616,36 @@ function downloadAsset(id){
 /* ===== 充值 ===== */
 function renderRecharge(){
   return `<div class="container-narrow">
-    <div class="recharge-head">
-      <h1>充值点数</h1>
-      <p>点数不过期、不清零，下载一张扣一次，用多少充多少</p>
-      <div class="recharge-balance">当前余额 <span class="num">${STATE.user.points}</span> 点</div>
-    </div>
-
-    <div class="pkg-grid">
-      ${PACKAGES.map(p=>`<div class="pkg-card ${p.recommend?'best':''} ${STATE.selectedPackage===p.id?'selected':''}" onclick="STATE.selectedPackage=${p.id};render()">
-        <div class="pk-pts">${p.points}<span> 点</span></div>
-        <div class="pk-price">¥${p.price}<small> 元</small></div>
-        <div class="pk-desc">${p.desc}</div>
-        ${p.bonus?`<div class="pk-gift">${p.bonus}</div>`:'<div style="height:20px"></div>'}
-      </div>`).join('')}
-    </div>
-
-    <div class="card" style="padding:22px;margin-bottom:20px">
-      <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;text-align:center">选个支付方式</h3>
-      <div class="pay-row">
-        <div class="pay-method ${STATE.selectedPay==='wechat'?'active':''}" onclick="STATE.selectedPay='wechat';render()">
-          <div class="pi" style="background:#07C160">微</div>微信支付
-        </div>
-        <div class="pay-method ${STATE.selectedPay==='alipay'?'active':''}" onclick="STATE.selectedPay='alipay';render()">
-          <div class="pi" style="background:#1677FF">支</div>支付宝
-        </div>
+    <div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">🎁</div>
+      <h1 style="font-size:var(--font-xl);font-weight:800;margin-bottom:12px">全部图案免费下载</h1>
+      <p style="color:var(--text-2);font-size:var(--font-base);margin-bottom:8px">PrintHunt 第一期完全免费，所有图案不限次数下载</p>
+      <p style="color:var(--text-3);font-size:var(--font-sm);margin-bottom:32px">下载的图案均含POD商用授权，可直接用于Temu/Etsy/亚马逊等平台上架销售</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" onclick="navigate('home')">去下载图案</button>
+        <button class="btn btn-outline btn-lg" onclick="navigate('license')">查看商用授权</button>
       </div>
-      <button class="btn btn-accent btn-block btn-lg" onclick="showPay()" ${!STATE.selectedPackage?'disabled':''}>
-        ${STATE.selectedPackage?'确认支付 ¥'+PACKAGES.find(p=>p.id===STATE.selectedPackage).price:'先选一个套餐'}
-      </button>
-    </div>
-
-    <div class="card" style="padding:20px">
-      <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">充值前看一眼</h3>
-      <div style="font-size:13px;color:var(--text-2);line-height:2">
-        <div class="flex-gap"><span class="text-primary-bold">1.</span>点数永久有效，不会过期清零，什么时候用都行</div>
-        <div class="flex-gap"><span class="text-primary-bold">2.</span>微信支付宝都行，人民币结算，不用外币卡</div>
-        <div class="flex-gap"><span class="text-primary-bold">3.</span>付完点数秒到，下载记录和授权凭证在"我的下载"里查</div>
-        <div class="flex-gap"><span class="text-primary-bold">4.</span>充多了用不完没事，一直有效；有问题找客服原路退</div>
-      </div>
-    </div>
-
-    <div id="payModal" style="display:none">
-      <div class="modal-mask" onclick="closePay()">
-        <div class="modal-box" onclick="event.stopPropagation()">
-          <div class="modal-x" onclick="closePay()">×</div>
-          <h3>${STATE.selectedPay==='wechat'?'微信扫码支付':'支付宝扫码支付'}</h3>
-          <p>应付 <strong style="color:var(--accent);font-size:16px">¥${PACKAGES.find(p=>p.id===STATE.selectedPackage)?.price||0}</strong></p>
-          <div class="qr-area"><div class="qr-code" style="${STATE.selectedPay==='wechat'?'filter:hue-rotate(100deg)':''}"></div></div>
-          <p style="font-size:12px">打开${STATE.selectedPay==='wechat'?'微信':'支付宝'}扫一扫，完成支付</p>
-          <button class="btn btn-primary btn-block" onclick="confirmPay()">模拟支付成功</button>
+      <div style="margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;text-align:left">
+        <div class="gray-box">
+          <div style="font-size:24px;margin-bottom:8px">🆓</div>
+          <div style="font-weight:700;margin-bottom:4px">完全免费</div>
+          <div style="font-size:var(--font-sm);color:var(--text-3)">无需充值，不限次数</div>
+        </div>
+        <div class="gray-box">
+          <div style="font-size:24px;margin-bottom:8px">📜</div>
+          <div style="font-weight:700;margin-bottom:4px">商用授权</div>
+          <div style="font-size:var(--font-sm);color:var(--text-3)">下载即含POD商用授权</div>
+        </div>
+        <div class="gray-box">
+          <div style="font-size:24px;margin-bottom:8px">🖼️</div>
+          <div style="font-weight:700;margin-bottom:4px">高清PNG</div>
+          <div style="font-size:var(--font-sm);color:var(--text-3)">300dpi透明底，直接印刷</div>
         </div>
       </div>
     </div>
   </div>`;
 }
+
 function showPay(){document.getElementById('payModal').style.display='block';}
 function closePay(){document.getElementById('payModal').style.display='none';}
 function confirmPay(){
@@ -1677,7 +1698,7 @@ function renderProfile(){
             <thead><tr><th>印花名称</th><th>消耗</th><th>下载时间</th><th>授权编号</th><th>操作</th></tr></thead>
             <tbody>${DOWNLOADS.map(d=>`<tr>
               <td style="max-width:280px">${d.assetTitle}</td>
-              <td><span class="text-accent-bold">${d.cost}点</span></td>
+              <td><span style="color:var(--success);font-weight:600">免费</span></td>
               <td>${d.time}</td>
               <td><code style="background:var(--bg-soft);padding:2px 7px;border-radius:4px;font-size:11px">${d.auth}</code></td>
               <td><button class="btn btn-outline btn-sm" onclick="toast('授权凭证PDF已开始下载')">导出凭证</button></td>
@@ -1920,7 +1941,7 @@ function renderAdDashboard(){
         <div style="display:flex;flex-direction:column;gap:10px">
           ${ASSETS.slice(0,5).map((a,i)=>`<div style="display:flex;align-items:center;gap:10px">
             <div style="width:22px;height:22px;border-radius:5px;background:${i<3?'var(--accent-light)':'var(--bg-soft)'};color:${i<3?'var(--accent)':'var(--text-3)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</div>
-            <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.title}</div><div style="font-size:10px;color:var(--text-3)">${a.platform} · ${a.cost}点</div></div>
+            <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.title}</div><div style="font-size:10px;color:var(--text-3)">${a.platform} · 免费</div></div>
             <div style="font-size:12px;font-weight:700;color:var(--primary)">${Math.floor(Math.random()*500)+100}</div>
           </div>`).join('')}
         </div>
@@ -1944,7 +1965,7 @@ function renderAdReview(){
         <div class="review-body">
           <div class="rt">${a.title}</div>
           <div class="rm">${a.platform} · ${a.style} · 风险<span style="color:${a.risk==='低'?'var(--success)':a.risk==='中'?'var(--warning)':'var(--danger)'}">${a.risk}</span></div>
-          <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap"><span class="tag tag-gray">${a.cost}点</span></div>
+          <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap"><span class="tag tag-green">免费</span></div>
           <div class="review-act">
             <button class="btn btn-outline btn-sm" onclick="toast('已拒绝')">拒绝</button>
             <button class="btn btn-primary btn-sm" onclick="toast('已通过并上架')">通过上架</button>
@@ -1967,7 +1988,7 @@ function renderAdAssets(){
         <td style="max-width:200px;font-size:12px">${a.title}</td>
         <td><span class="tag tag-blue">${a.platform}</span></td>
         <td><span class="tag tag-gray">${a.style}</span></td>
-        <td class="text-accent-bold">${a.cost}</td>
+        <td style="color:var(--success);font-weight:600">免费</td>
         <td>${Math.floor(Math.random()*800)+50}</td>
         <td><span class="tag tag-green">已上架</span></td>
         <td><button class="btn btn-ghost btn-sm" onclick="toast('打开编辑')">编辑</button><button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已下架')">下架</button></td>
