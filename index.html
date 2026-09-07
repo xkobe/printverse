@@ -3147,13 +3147,15 @@ function renderAdSettings(){
         <span class="tag ${isBaidupanTokenValid()?'tag-green':'tag-orange'}">${isBaidupanTokenValid()?'OAuth已授权':'未授权'}</span>
         <span style="font-size:12px;color:var(--text-3);margin-left:auto">已用空间：${getSettings().storageType==='baidupan'?'待连接后显示':'约 ' + (JSON.stringify(getAssets()).length / 1024 / 1024).toFixed(1) + ' MB（localStorage）'}</span>
       </div>
-      <div style="margin-top:12px;display:flex;gap:10px">
-        <button onclick="location.hash='#/baidupan-auth'" style="padding:8px 18px;background:linear-gradient(135deg,#4a6cf7,#6b8cff);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="saveAllSettings();setTimeout(function(){location.hash='#/baidupan-auth'},300)" style="padding:8px 18px;background:linear-gradient(135deg,#4a6cf7,#6b8cff);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-          ${isBaidupanTokenValid()?'管理授权':'OAuth授权'}
+          保存并OAuth授权
         </button>
+        ${isBaidupanTokenValid()?`<button onclick="location.hash='#/baidupan-auth'" style="padding:8px 18px;background:#fff;color:var(--text-2);border:1px solid var(--border);border-radius:6px;font-size:13px;cursor:pointer">管理授权</button>`:''}
         ${isBaidupanTokenValid()?`<button onclick="refreshBaidupanToken().then(()=>{toast('Token已刷新');render()}).catch(e=>toast(e.message))" style="padding:8px 18px;background:#fff;color:var(--text-2);border:1px solid var(--border);border-radius:6px;font-size:13px;cursor:pointer">刷新Token</button>`:''}
       </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-3)">提示：填写API Key后点击「保存并OAuth授权」，系统会自动保存配置并跳转授权页</div>
     </div>
   </div>`;
 }
