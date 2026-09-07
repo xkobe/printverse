@@ -46,8 +46,8 @@ TEST_MODE = os.environ.get("TEST_MODE", "true").lower() == "true"
 # ============================================================
 if TEST_MODE:
     # 测试模式：极致省，每平台1词×3条，总计9条
-    TEMU_KEYWORDS = ["graphic tee men"]
-    SHEIN_KEYWORDS = ["men graphic tee"]
+    TEMU_KEYWORDS = ["men graphic print t shirt"]
+    SHEIN_KEYWORDS = ["men graphic print t shirt"]
     ETSY_KEYWORDS = ["tshirt png sublimation"]
     PER_KEYWORD_LIMIT = {"temu": 3, "shein": 3, "etsy": 3}
     print(f"[测试模式-极致省] Temu 1词×3, Shein 1词×3, Etsy 1词×3, 总计9条")
@@ -59,20 +59,40 @@ else:
     PER_KEYWORD_LIMIT = {"temu": 5, "shein": 5, "etsy": 5}
 
 # ============================================================
-# POD精准过滤（只保留印花T恤/卫衣相关）
+# POD精准过滤（只保留印花T恤/卫衣）
 # ============================================================
-POD_KEYWORDS = [
+# 必须包含的服装类词
+CLOTHING_WORDS = [
     "shirt", "tee", "t-shirt", "tshirt", "hoodie", "sweatshirt",
+]
+# 必须包含的印花/设计相关词（至少一个）
+DESIGN_WORDS = [
     "graphic", "print", "printed", "sublimation", "png", "design",
     "vintage", "retro", "funny", "slogan", "quote", "animal",
-    "floral", "boho", "minimalist", "western", "halloween", "christmas",
+    "floral", "boho", "minimalist", "western", "halloween",
+    "christmas", "cartoon", "anime", "band", "music", "game",
+    "gamer", "gaming", "skull", "tattoo", "abstract", "pattern",
+    "letter", "text", "typography", "art", "illustration",
 ]
-# 排除词（非服装类）
+# 排除词（非印花款/非T恤类）
 EXCLUDE_KEYWORDS = [
+    # 非T恤服装
     "dress", "skirt", "pants", "jeans", "shorts", "shoe", "boot",
     "bag", "purse", "wallet", "hat", "cap", "sock", "underwear",
     "bra", "panty", "swimsuit", "bikini", "coat", "jacket", "blazer",
+    "camisole", "tank top", "crop top", "bodysuit", "blouse",
+    "square neck", "lace", "sheer", "mesh", "corset", "bustier",
+    "lingerie", "sleepwear", "pajama", "robe", "kimono",
+    "cardigan", "sweater", "pullover", "knit",
+    # 基础款（无印花）
+    "basic", "plain", "solid", "essential", "classic", "regular",
+    "standard", "simple",
+    # 配件
     "phone case", "mug", "cup", "pillow", "poster", "sticker",
+    "tote bag", "backpack", "jewelry", "necklace", "earring",
+    # 其他
+    "baby", "kids", "toddler", "infant", "maternity", "nursing",
+    "uniform", "workwear", "scrubs",
 ]
 
 
@@ -183,27 +203,29 @@ def run_actor(platform, keyword, max_items, max_retries=2):
 
 
 def is_pod_product(title):
-    """精准判断是否为POD印花T恤/卫衣"""
+    """精准判断是否为POD印花T恤/卫衣
+    规则：必须包含T恤/卫衣词 + 必须包含印花/设计相关词 + 不包含排除词
+    """
     if not title:
         return False
     title_lower = title.lower()
 
-    # 排除非服装类
+    # 1. 排除非印花款/非T恤类
     for excl in EXCLUDE_KEYWORDS:
         if excl in title_lower:
             return False
 
-    # 必须包含服装类词
-    clothing_words = ["shirt", "tee", "t-shirt", "tshirt", "hoodie", "sweatshirt", "top"]
-    has_clothing = any(w in title_lower for w in clothing_words)
+    # 2. 必须包含T恤/卫衣类词
+    has_clothing = any(w in title_lower for w in CLOTHING_WORDS)
+    if not has_clothing:
+        return False
 
-    # 且包含印花/设计相关词，或者是vintage/funny等风格
-    design_words = ["graphic", "print", "printed", "sublimation", "png", "design",
-                    "vintage", "retro", "funny", "slogan", "quote", "animal",
-                    "floral", "boho", "minimalist", "western"]
-    has_design = any(w in title_lower for w in design_words)
+    # 3. 必须包含印花/设计相关词（至少一个）
+    has_design = any(w in title_lower for w in DESIGN_WORDS)
+    if not has_design:
+        return False
 
-    return has_clothing and (has_design or True)  # 放宽：只要是服装就保留
+    return True
 
 
 def safe_get(d, *keys, default=""):
