@@ -2172,6 +2172,116 @@ function renderAdmin(){
 }
 
 /* ===== 管理后台各模块 ===== */
+
+/* ===== 设置功能 ===== */
+function getSettings() {
+  return DB.get('settings', {
+    apifyToken: '',
+    githubToken: '',
+    collectLimit: 30,
+    retryCount: 2,
+    proxyType: 'auto',
+    alertThreshold: 10,
+    alertEmail: 'admin@printhunt.com',
+    scheduleEnabled: false,
+    scheduleTime: '08:00',
+    scheduleFrequency: 'daily',
+    schedulePlatforms: ['Temu','Etsy','Shein'],
+    scheduleLimit: 9,
+    lastTestTime: '',
+    connectionStatus: 'unknown'
+  });
+}
+function saveSettings(s) { DB.set('settings', s); }
+
+function saveAllSettings() {
+  const s = getSettings();
+  const apifyInput = document.getElementById('apify-token-input');
+  const ghInput = document.getElementById('gh-token-input');
+  const limitInput = document.getElementById('collect-limit-input');
+  const retryInput = document.getElementById('retry-count-input');
+  const proxySelect = document.getElementById('proxy-select');
+  const alertInput = document.getElementById('alert-threshold-input');
+  const emailInput = document.getElementById('alert-email-input');
+  const scheduleEnabled = document.getElementById('schedule-enabled');
+  const scheduleTime = document.getElementById('schedule-time');
+  const scheduleFrequency = document.getElementById('schedule-frequency');
+  const scheduleLimit = document.getElementById('schedule-limit');
+
+  if (apifyInput) s.apifyToken = apifyInput.value.trim();
+  if (ghInput) s.githubToken = ghInput.value.trim();
+  if (limitInput) s.collectLimit = parseInt(limitInput.value) || 30;
+  if (retryInput) s.retryCount = parseInt(retryInput.value) || 2;
+  if (proxySelect) s.proxyType = proxySelect.value;
+  if (alertInput) s.alertThreshold = parseFloat(alertInput.value) || 10;
+  if (emailInput) s.alertEmail = emailInput.value.trim();
+  if (scheduleEnabled) s.scheduleEnabled = scheduleEnabled.checked;
+  if (scheduleTime) s.scheduleTime = scheduleTime.value;
+  if (scheduleFrequency) s.scheduleFrequency = scheduleFrequency.value;
+  if (scheduleLimit) s.scheduleLimit = parseInt(scheduleLimit.value) || 9;
+
+  // 平台选择
+  const platforms = [];
+  ['Temu','Etsy','Shein'].forEach(p => {
+    const cb = document.getElementById('schedule-platform-' + p);
+    if (cb && cb.checked) platforms.push(p);
+  });
+  s.schedulePlatforms = platforms;
+
+  saveSettings(s);
+  toast('配置已保存');
+}
+
+function toggleApifyToken() {
+  const input = document.getElementById('apify-token-input');
+  const btn = document.getElementById('apify-token-toggle');
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '隐藏'; }
+  else { input.type = 'password'; btn.textContent = '显示'; }
+}
+
+function testApifyConnection() {
+  const s = getSettings();
+  const token = s.apifyToken || (document.getElementById('apify-token-input') || {}).value || '';
+  if (!token) { toast('请先填写并保存Apify Token'); return; }
+  toast('正在测试连接...');
+  // 真实调用Apify API验证
+  fetch('https://api.apify.com/v2/users/me', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(r => {
+    if (r.ok) return r.json();
+    throw new Error('HTTP ' + r.status);
+  }).then(data => {
+    const s2 = getSettings();
+    s2.connectionStatus = 'connected';
+    s2.lastTestTime = new Date().toLocaleString();
+    s2.apifyUsername = data.data ? data.data.username || data.data.id : 'unknown';
+    saveSettings(s2);
+    toast('连接成功！用户：' + (s2.apifyUsername || 'unknown'));
+    render();
+  }).catch(e => {
+    const s2 = getSettings();
+    s2.connectionStatus = 'failed';
+    s2.lastTestTime = new Date().toLocaleString();
+    saveSettings(s2);
+    toast('连接失败：' + e.message);
+    render();
+  });
+}
+
+function getNextScheduleTime() {
+  const s = getSettings();
+  if (!s.scheduleEnabled || !s.scheduleTime) return '未启用';
+  const [h, m] = s.scheduleTime.split(':').map(Number);
+  const now = new Date();
+  const next = new Date();
+  next.setHours(h, m, 0, 0);
+  if (next <= now) {
+    if (s.scheduleFrequency === 'daily') next.setDate(next.getDate() + 1);
+    else if (s.scheduleFrequency === 'weekly') next.setDate(next.getDate() + 7);
+  }
+  return next.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
 function renderAdDashboard(){
   const data=[42,58,35,72,65,88,76,92,68,85,95,78];
   const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
@@ -2435,13 +2545,17 @@ christmas holiday tee</textarea>
 }
 
 function renderAdSettings(){
+  const s = getSettings();
+  const statusColor = s.connectionStatus === 'connected' ? 'var(--success)' : s.connectionStatus === 'failed' ? 'var(--danger)' : 'var(--text-3)';
+  const statusText = s.connectionStatus === 'connected' ? '已连接' : s.connectionStatus === 'failed' ? '连接失败' : '未测试';
   return `<div>
-    <div class="admin-head"><h1>Apify 配置</h1>
+    <div class="admin-head"><h1>系统设置</h1>
       <div class="ha">
-        <button class="btn btn-outline btn-sm" onclick="toast('配置已保存')">保存配置</button>
-        <button class="btn btn-primary btn-sm" onclick="toast('Apify连接测试成功，API Token有效，剩余额度$42.50')">连接测试</button>
+        <button class="btn btn-outline btn-sm" onclick="saveAllSettings()">保存全部配置</button>
+        <button class="btn btn-primary btn-sm" onclick="testApifyConnection()">测试Apify连接</button>
       </div>
     </div>
+
     <!-- API连接配置 -->
     <div class="chart-card" style="margin-bottom:24px">
       <h3 style="margin:0 0 16px">API 连接配置</h3>
@@ -2449,111 +2563,123 @@ function renderAdSettings(){
         <div>
           <label class="form-label">Apify API Token</label>
           <div class="flex-gap">
-            <input type="password" value="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace">
-            <button class="btn btn-outline btn-sm" onclick="toast('Token已复制到剪贴板')">显示</button>
+            <input id="apify-token-input" type="password" placeholder="apify_api_xxxxxxxxxxxxxxxx" value="${s.apifyToken}" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace">
+            <button id="apify-token-toggle" class="btn btn-outline btn-sm" onclick="toggleApifyToken()">显示</button>
           </div>
-          <div class="hint-text" style="margin-top:6px">在 Apify 控制台 → Settings → Integrations 中获取</div>
+          <div class="hint-text" style="margin-top:6px">Apify控制台 → Settings → Integrations → Personal API Tokens</div>
         </div>
         <div>
-          <label class="form-label">Webhook 回调地址</label>
+          <label class="form-label">GitHub Token（触发Actions工作流）</label>
           <div class="flex-gap">
-            <input type="text" value="https://api.printhunt.com/webhook/apify/collect" readonly style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;background:var(--border-light)">
-            <button class="btn btn-outline btn-sm" onclick="toast('回调地址已复制')">复制</button>
-          </div>
-          <div class="hint-text" style="margin-top:6px">Apify任务完成后自动回调此地址，落库采集结果</div>
-        </div>
-        <div>
-          <label class="form-label">GitHub Token（用于后台触发采集/变体工作流）</label>
-          <div class="flex-gap">
-            <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${getGithubToken()}" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace">
+            <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx" value="${s.githubToken || getGithubToken()}" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace">
             <button class="btn btn-outline btn-sm" onclick="saveGithubToken()">保存</button>
           </div>
-          <div class="hint-text" style="margin-top:6px">仅保存在本地浏览器，用于调用GitHub API触发Actions。GitHub → Settings → Developer settings → Personal access tokens</div>
+          <div class="hint-text" style="margin-top:6px">GitHub → Settings → Developer settings → Personal access tokens（需workflow权限）</div>
         </div>
       </div>
-      <div style="margin-top:16px;padding:12px 16px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:6px;display:flex;align-items:center;gap:8px">
-        <span style="color:var(--success);font-size:16px">●</span>
-        <span style="font-size:13px;color:var(--success)">连接状态：正常 · 最后测试时间：2026-09-03 14:25</span>
+      <div style="margin-top:16px;padding:12px 16px;background:${s.connectionStatus==='connected'?'#f6ffed':'#fff7e6'};border:1px solid ${s.connectionStatus==='connected'?'#b7eb8f':'#ffd591'};border-radius:6px;display:flex;align-items:center;gap:8px">
+        <span style="color:${statusColor};font-size:16px">●</span>
+        <span style="font-size:13px;color:var(--text-1)">连接状态：<strong style="color:${statusColor}">${statusText}</strong>${s.lastTestTime?' · 最后测试：'+s.lastTestTime:''}${s.apifyUsername?' · 用户：'+s.apifyUsername:''}</span>
       </div>
     </div>
+
+    <!-- 定时任务设置 -->
+    <div class="chart-card" style="margin-bottom:24px">
+      <h3 style="margin:0 0 16px">定时采集任务</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+        <div>
+          <label class="form-label">启用定时采集</label>
+          <div style="padding-top:6px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+              <input id="schedule-enabled" type="checkbox" ${s.scheduleEnabled?'checked':''} style="accent-color:var(--primary);width:18px;height:18px">
+              <span>${s.scheduleEnabled?'已启用':'已停用'}</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">执行时间</label>
+          <input id="schedule-time" type="time" value="${s.scheduleTime}" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label class="form-label">执行频率</label>
+          <select id="schedule-frequency" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <option value="daily" ${s.scheduleFrequency==='daily'?'selected':''}>每天</option>
+            <option value="weekly" ${s.scheduleFrequency==='weekly'?'selected':''}>每周</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">单次采集上限（条）</label>
+          <input id="schedule-limit" type="number" value="${s.scheduleLimit}" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
+          <div class="hint-text-top">测试期建议9条（3平台×3条）</div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">采集平台</label>
+        <div style="display:flex;gap:16px;padding-top:4px">
+          ${['Temu','Etsy','Shein'].map(p => `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input id="schedule-platform-${p}" type="checkbox" ${s.schedulePlatforms.includes(p)?'checked':''} style="accent-color:var(--primary);width:16px;height:16px">${p}</label>`).join('')}
+          <span style="font-size:12px;color:var(--text-3);text-decoration:line-through">TikTok（暂未启用）</span>
+        </div>
+      </div>
+      <div style="padding:10px 14px;background:var(--primary-light);border-radius:6px;display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <span style="font-size:12px;color:var(--primary)">下次执行时间：<strong>${getNextScheduleTime()}</strong> · 配置保存后由GitHub Actions定时触发</span>
+      </div>
+    </div>
+
     <!-- 平台Actor配置 -->
     <div class="chart-card" style="margin-bottom:24px">
       <h3 style="margin:0 0 16px">平台爬虫 Actor 配置</h3>
       <table class="dtable">
-        <thead><tr><th>平台</th><th>Actor ID</th><th>Actor 名称</th><th>单次成本估算</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th>平台</th><th>Actor ID</th><th>Actor 名称</th><th>单次成本估算</th><th>状态</th></tr></thead>
         <tbody>
-          <tr><td><span class="tag tag-blue">Temu</span></td><td><code class="gray-tag">web.harvester~temu-scraper</code></td><td>Temu Product Scraper</td><td>~$0.30 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag tag-orange">Etsy</span></td><td><code class="gray-tag">epctex~etsy-scraper</code></td><td>Etsy Scraper</td><td>~$0.45 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag" style="background:var(--danger);color:#fff">Shein</span></td><td><code class="gray-tag">shahidirfan~shein-product-scraper</code></td><td>Shein Product Scraper</td><td>~$0.35 / 100条</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn btn-outline btn-sm">测试</button></td></tr>
-          <tr><td><span class="tag tag-gray" style="opacity:0.5">TikTok</span></td><td><code style="background:var(--border-light);padding:2px 6px;border-radius:4px;font-size:11px;opacity:0.5">clockworks~tiktok-scraper</code></td><td>TikTok Scraper（视频）</td><td>-</td><td><span class="tag tag-gray">暂未启用</span></td><td><button class="btn btn-outline btn-sm" disabled style="opacity:0.5">测试</button></td></tr>
+          <tr><td><span class="tag tag-blue">Temu</span></td><td><code class="gray-tag">apivault_labs~temu-product-scraper</code></td><td>Temu Product Scraper</td><td>~$0.30 / 100条</td><td><span class="tag tag-green">已启用</span></td></tr>
+          <tr><td><span class="tag tag-orange">Etsy</span></td><td><code class="gray-tag">yumitori~etsy-listings-scraper</code></td><td>Etsy Listings Scraper</td><td>~$0.45 / 100条</td><td><span class="tag tag-green">已启用</span></td></tr>
+          <tr><td><span class="tag" style="background:var(--danger);color:#fff">Shein</span></td><td><code class="gray-tag">native_emblem~shein-product-scraper</code></td><td>Shein Product Scraper</td><td>~$0.35 / 100条</td><td><span class="tag tag-green">已启用</span></td></tr>
+          <tr><td><span class="tag tag-gray" style="opacity:0.5">TikTok</span></td><td><code style="background:var(--border-light);padding:2px 6px;border-radius:4px;font-size:11px;opacity:0.5">clockworks~tiktok-scraper</code></td><td>TikTok Scraper（视频）</td><td>-</td><td><span class="tag tag-gray">暂未启用</span></td></tr>
         </tbody>
       </table>
     </div>
-    <!-- 额度与告警 -->
+
+    <!-- 采集参数 -->
     <div class="chart-card" style="margin-bottom:24px">
-      <h3 style="margin:0 0 16px">额度使用与告警</h3>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
-        <div class="gray-box">
-          <div class="hint-text-bottom">本月套餐额度</div>
-          <div style="font-size:22px;font-weight:800;color:var(--text-1)">$50.00</div>
+      <h3 style="margin:0 0 16px">采集参数配置</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <div>
+          <label class="form-label">默认单次采集上限</label>
+          <input id="collect-limit-input" type="number" value="${s.collectLimit}" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
+          <div class="hint-text-top">防止单次任务消耗过多额度</div>
         </div>
-        <div class="gray-box">
-          <div class="hint-text-bottom">已使用</div>
-          <div style="font-size:22px;font-weight:800;color:#FB5454">$7.50</div>
+        <div>
+          <label class="form-label">失败重试次数</label>
+          <input id="retry-count-input" type="number" value="${s.retryCount}" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
+          <div class="hint-text-top">单条商品采集失败后的重试次数</div>
         </div>
-        <div class="gray-box">
-          <div class="hint-text-bottom">剩余额度</div>
-          <div style="font-size:22px;font-weight:800;color:var(--success)">$42.50</div>
-        </div>
-        <div class="gray-box">
-          <div class="hint-text-bottom">本月采集条数</div>
-          <div style="font-size:22px;font-weight:800;color:#0175cc">1,453</div>
-        </div>
-      </div>
-      <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:6px">
-          <span>额度使用进度</span><span>15%</span>
-        </div>
-        <div style="height:8px;background:#eee;border-radius:4px;overflow:hidden">
-          <div style="width:15%;height:100%;background:linear-gradient(90deg,#0175cc,var(--success));border-radius:4px"></div>
+        <div>
+          <label class="form-label">代理池配置</label>
+          <select id="proxy-select" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <option value="auto" ${s.proxyType==='auto'?'selected':''}>Apify 自动代理（推荐）</option>
+            <option value="residential" ${s.proxyType==='residential'?'selected':''}>住宅代理</option>
+            <option value="datacenter" ${s.proxyType==='datacenter'?'selected':''}>数据中心代理</option>
+          </select>
+          <div class="hint-text-top">反爬拦截时自动切换IP</div>
         </div>
       </div>
+    </div>
+
+    <!-- 额度告警 -->
+    <div class="chart-card">
+      <h3 style="margin:0 0 16px">额度告警配置</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div>
-          <label class="form-label">额度告警阈值（低于此值发送邮件提醒）</label>
+          <label class="form-label">额度告警阈值（低于此值提醒）</label>
           <div class="flex-center-gap">
-            <input type="number" value="10" style="width:80px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <input id="alert-threshold-input" type="number" value="${s.alertThreshold}" style="width:100px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
             <span style="font-size:12px;color:var(--text-3)">美元</span>
           </div>
         </div>
         <div>
           <label class="form-label">告警通知邮箱</label>
-          <input type="email" value="admin@printhunt.com" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
-        </div>
-      </div>
-    </div>
-    <!-- 采集参数 -->
-    <div class="chart-card">
-      <h3 style="margin:0 0 16px">采集参数配置</h3>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
-        <div>
-          <label class="form-label">默认单次采集上限</label>
-          <input type="number" value="200" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
-          <div class="hint-text-top">防止单次任务消耗过多额度</div>
-        </div>
-        <div>
-          <label class="form-label">失败重试次数</label>
-          <input type="number" value="2" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
-          <div class="hint-text-top">单条商品采集失败后的重试次数</div>
-        </div>
-        <div>
-          <label class="form-label">代理池配置</label>
-          <select style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px">
-            <option>Apify 自动代理（推荐）</option>
-            <option>住宅代理</option>
-            <option>数据中心代理</option>
-          </select>
-          <div class="hint-text-top">反爬拦截时自动切换IP</div>
+          <input id="alert-email-input" type="email" value="${s.alertEmail}" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
         </div>
       </div>
     </div>
