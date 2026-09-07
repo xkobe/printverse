@@ -2309,6 +2309,107 @@ function getNextScheduleTime() {
   return next.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
 }
 
+/* ===== 手动上传功能 ===== */
+let uploadImageData = null;
+
+function openUploadModal() {
+  uploadImageData = null;
+  const modal = document.getElementById('upload-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.getElementById('upload-preview').innerHTML = '<div style="color:var(--text-3);font-size:13px">选择图片后预览</div>';
+    document.getElementById('upload-title').value = '';
+    document.getElementById('upload-platform').value = 'Temu';
+    document.getElementById('upload-style').value = '复古';
+    document.getElementById('upload-topic').value = '';
+  }
+}
+
+function closeUploadModal() {
+  const modal = document.getElementById('upload-modal');
+  if (modal) modal.style.display = 'none';
+  uploadImageData = null;
+}
+
+function handleUploadFile(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    toast('请选择图片文件');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    toast('图片不能超过10MB');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // 用canvas压缩图片，最长边1200px
+    const img = new Image();
+    img.onload = function() {
+      const maxSize = 1200;
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      uploadImageData = canvas.toDataURL('image/png');
+      document.getElementById('upload-preview').innerHTML = '<img src="' + uploadImageData + '" style="max-width:100%;max-height:200px;object-fit:contain;border-radius:8px">';
+      toast('图片已加载，尺寸：' + w + 'x' + h);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleUploadDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  handleUploadFile(file);
+}
+
+function saveUploadedAsset() {
+  if (!uploadImageData) {
+    toast('请先选择图片');
+    return;
+  }
+  const title = document.getElementById('upload-title').value.trim();
+  if (!title) {
+    toast('请填写图案标题');
+    return;
+  }
+  const platform = document.getElementById('upload-platform').value;
+  const style = document.getElementById('upload-style').value;
+  const topic = document.getElementById('upload-topic').value.trim() || '手动上传';
+
+  const assets = getAssets();
+  const newId = Math.max(...assets.map(a => a.id), 0) + 1;
+  const newAsset = {
+    id: newId,
+    title: title,
+    platform: platform,
+    period: '日榜',
+    style: style,
+    topic: topic,
+    cost: 0,
+    hot: true,
+    image: uploadImageData,
+    shirt: uploadImageData,
+    date: new Date().toISOString().split('T')[0],
+    status: '上架',
+    downloads: 0,
+    createdAt: new Date().toISOString(),
+    source: 'manual'
+  };
+  assets.unshift(newAsset);
+  saveAssets(assets);
+  closeUploadModal();
+  toast('上传成功，已加入素材库');
+  render();
+}
+
 function renderAdDashboard(){
   const data=[42,58,35,72,65,88,76,92,68,85,95,78];
   const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
@@ -2399,6 +2500,7 @@ function renderAdAssets(){
           <input style="border:none;padding:8px 0;font-size:13px;width:160px" placeholder="搜ID或标题" value="${kw}" onkeyup="if(event.key==='Enter'){STATE.assetSearch=this.value;render()}">
         </div>
         <span style="font-size:12px;color:var(--text-3)">共 ${filtered.length} 条</span>
+        <button class="btn btn-primary btn-sm" onclick="openUploadModal()">+ 手动上传</button>
       </div>
     </div>
     <div class="card overflow-hidden"><table class="dtable">
@@ -2872,5 +2974,81 @@ function init(){
 }
 init();
 </script>
+
+<!-- 手动上传模态框 -->
+<div id="upload-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="margin:0;font-size:18px;font-weight:700;color:var(--text-1)">手动上传变体图案</h3>
+      <button onclick="closeUploadModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--bg-soft)'" onmouseout="this.style.background='none'">×</button>
+    </div>
+
+    <!-- 图片上传区 -->
+    <div style="margin-bottom:16px">
+      <label class="form-label">图案图片（PNG透明底推荐）</label>
+      <div id="upload-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg-soft)"
+        onclick="document.getElementById('upload-file-input').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'"
+        ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--bg-soft)'"
+        ondrop="handleUploadDrop(event);this.style.borderColor='var(--border)';this.style.background='var(--bg-soft)'">
+        <div id="upload-preview" style="min-height:120px;display:flex;align-items:center;justify-content:center">
+          <div style="color:var(--text-3);font-size:13px">
+            <div style="font-size:32px;margin-bottom:8px">📁</div>
+            点击选择或拖拽图片到此处<br>
+            <span style="font-size:11px">支持PNG/JPG，最大10MB，自动压缩</span>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="upload-file-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleUploadFile(this.files[0])">
+    </div>
+
+    <!-- 信息填写 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="grid-column:span 2">
+        <label class="form-label">图案标题 *</label>
+        <input id="upload-title" type="text" placeholder="例如：Vintage Wolf Head Graphic Tee" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="form-label">来源平台</label>
+        <select id="upload-platform" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="Temu">Temu</option>
+          <option value="Etsy">Etsy</option>
+          <option value="Shein">Shein</option>
+          <option value="手动上传">手动上传</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">风格</label>
+        <select id="upload-style" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="复古">复古</option>
+          <option value="简约">简约</option>
+          <option value="卡通">卡通</option>
+          <option value="暗黑">暗黑</option>
+          <option value="花卉">花卉</option>
+          <option value="动物">动物</option>
+          <option value="标语">标语</option>
+          <option value="节日">节日</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2">
+        <label class="form-label">主题/标签</label>
+        <input id="upload-topic" type="text" placeholder="例如：狼头、复古、街头风" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box">
+      </div>
+    </div>
+
+    <!-- 提示 -->
+    <div style="background:var(--primary-light);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--primary);line-height:1.6">
+      <strong>上传说明：</strong>图片将自动压缩至最长边1200px并保存为PNG。上传后直接上架，用户可在首页搜索并免费下载。建议使用透明底PNG以获得最佳印花效果。
+    </div>
+
+    <!-- 操作按钮 -->
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeUploadModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveUploadedAsset()">确认上传</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
