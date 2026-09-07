@@ -557,11 +557,15 @@ body.admin-mode{background:#f0f2f5;}
   h2{font-size:var(--font-lg)}
   h3{font-size:var(--font-md)}
 }
+@media(max-width:768px){
+  .hot-products-grid{grid-template-columns:repeat(2,1fr) !important;gap:10px !important}
+}
 @media(max-width:480px){
   /* 小屏手机 */
   .topnav-inner{padding:0 10px}
   .container{padding:10px}
   .asset-feed{column-count:2 !important;column-gap:6px !important}
+  .hot-products-grid{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
   .hero h1{font-size:var(--font-lg) !important}
   .hero{padding:32px 16px !important}
   .search-large{padding:8px 12px}
@@ -1053,6 +1057,98 @@ function assetCard(a,opts={}){
 /* ===== 渲染 ===== */
 // 页面加载时自动拉取采集数据
 // 路由解析移到init()中统一处理
+
+/* ===== 热销款原款采集展示（选品助手风格） ===== */
+function renderHotProducts(){
+  const products = PRODUCTS_DATA ? PRODUCTS_DATA.products : [];
+  const updatedAt = PRODUCTS_DATA ? PRODUCTS_DATA.updated_at : '';
+  const displayProducts = products.slice(0, 8);
+
+  if(displayProducts.length === 0){
+    // 无真实数据时显示模拟数据
+    return `<div style="margin-bottom:48px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;margin:0;color:var(--text-1)">🔥 热销款原款采集</h2>
+          <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">每日追踪 Temu / Shein / Etsy 热销榜 · 数据仅供选品参考</p>
+        </div>
+        <span style="font-size:12px;color:var(--text-3);background:var(--bg-soft);padding:4px 10px;border-radius:6px">采集演示数据</span>
+      </div>
+      <div style="background:var(--bg-soft);border:1px dashed var(--border);border-radius:12px;padding:40px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">📦</div>
+        <div style="font-size:14px;color:var(--text-2);margin-bottom:6px">热销款数据采集中...</div>
+        <div style="font-size:12px;color:var(--text-3)">管理后台启动采集后，这里将展示真实热销商品数据</div>
+      </div>
+    </div>`;
+  }
+
+  const platformColors = {
+    'temu': '#FB5454',
+    'shein': '#000',
+    'etsy': '#F56400',
+  };
+
+  return `<div style="margin-bottom:48px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-size:22px;font-weight:800;margin:0;color:var(--text-1)">🔥 热销款原款采集</h2>
+        <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">每日追踪 Temu / Shein / Etsy 热销榜 · AI变体的数据来源 · 原图仅供参考不可下载</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:12px;color:var(--text-3)">更新于 ${updatedAt ? updatedAt.slice(0,10) : '今日'}</span>
+        <span style="font-size:12px;color:var(--success);background:var(--success);color:#fff;padding:3px 10px;border-radius:6px;font-weight:600">实时数据 ${products.length}条</span>
+      </div>
+    </div>
+    <!-- 选品助手风格：横向商品卡片 -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px" class="hot-products-grid">
+      ${displayProducts.map((p,i)=>{
+        const platColor = platformColors[p.platform] || '#0175cc';
+        const price = p.price ? (typeof p.price === 'number' ? '$'+p.price.toFixed(2) : p.price) : 'N/A';
+        const sales = p.sold_count || p.sales_tip || '';
+        const rating = p.rating || '';
+        const reviews = p.review_count || '';
+        return `<div style="background:#fff;border:1px solid var(--border-light);border-radius:12px;overflow:hidden;transition:all .2s;cursor:default" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+          <!-- 商品图片：禁止下载、禁止放大、禁止右键 -->
+          <div style="position:relative;background:var(--bg-soft);aspect-ratio:1;overflow:hidden">
+            <img src="${p.image || p.local_image || ''}" 
+              style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none" 
+              draggable="false" 
+              oncontextmenu="return false" 
+              ondragstart="return false"
+              alt="${p.title}">
+            <!-- 平台标签 -->
+            <span style="position:absolute;top:8px;left:8px;background:${platColor};color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px">${p.platform}</span>
+            <!-- 不可下载提示 -->
+            <span style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;backdrop-filter:blur(4px)">原图仅供参考</span>
+          </div>
+          <!-- 商品信息 -->
+          <div style="padding:12px">
+            <div style="font-size:12px;color:var(--text-1);font-weight:600;line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px">${p.title}</div>
+            <!-- 价格 -->
+            <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+              <span style="font-size:16px;font-weight:800;color:var(--accent)">${price}</span>
+              ${p.original_price ? `<span style="font-size:11px;color:var(--text-3);text-decoration:line-through">${p.original_price}</span>` : ''}
+            </div>
+            <!-- 销量/评分/评论 -->
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-3);margin-bottom:10px;flex-wrap:wrap">
+              ${sales ? `<span style="display:flex;align-items:center;gap:2px">🔥 ${sales}</span>` : ''}
+              ${rating ? `<span style="color:#faad14">★ ${rating}</span>` : ''}
+              ${reviews ? `<span>${reviews}条评论</span>` : ''}
+            </div>
+            <!-- 原链接 -->
+            ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;font-size:11px;color:var(--primary);background:var(--primary-light);padding:7px;border-radius:6px;text-decoration:none;font-weight:600;transition:all .15s" onmouseover="this.style.background='#e6f2fb'" onmouseout="this.style.background='var(--primary-light)'" onclick="event.stopPropagation()">查看原款 →</a>` : '<div style="text-align:center;font-size:11px;color:var(--text-3);padding:7px">暂无链接</div>'}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <!-- 底部说明 -->
+    <div style="margin-top:14px;padding:12px 16px;background:var(--bg-soft);border-radius:8px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">💡</span>
+      <span style="font-size:12px;color:var(--text-2);line-height:1.6">以上为平台热销款<strong style="color:var(--text-1)">原款数据</strong>，用于选品参考和AI变体生成的数据来源。原图<strong style="color:var(--accent)">不可下载、不可商用</strong>，请下载上方的<strong style="color:var(--primary)">AI变体图案</strong>用于POD上架。</span>
+    </div>
+  </div>`;
+}
+
 function render(){
   const app=document.getElementById('app');
   // 管理后台模式：隐藏前端导航
@@ -1196,6 +1292,9 @@ function renderHome(){
     </div>
 
     <div class="container" style="max-width:1200px;margin:0 auto;padding:24px 24px 0">
+      <!-- 热销款原款采集（选品助手风格） -->
+      ${renderHotProducts()}
+
       <!-- 本周最新印花 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
         <div>
@@ -2411,6 +2510,8 @@ function init(){
   parseHash();
   render();
   if(STATE.mode==='admin'){ loadProductsData(); }
+  // 首页也加载热销款数据
+  loadProductsData().then(()=>{ if(STATE.currentRoute==='home') render(); });
   window.addEventListener('hashchange',()=>{
     parseHash();
     render();
