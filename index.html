@@ -2248,7 +2248,7 @@ function renderBaidupanAuth() {
         <div style="background:#fff7e6;border:1px solid #ffd591;border-radius:8px;padding:16px;margin-bottom:20px">
           <div style="font-size:14px;font-weight:600;color:#d46b08;margin-bottom:6px">⚠️ 请先配置API Key</div>
           <div style="font-size:13px;color:var(--text-2);line-height:1.6">请先到「管理后台 → 系统设置 → 百度网盘存储配置」填写 API Key 和 Secret Key，然后再进行授权。</div>
-          <button onclick="location.hash='#/admin';STATE.adminTab='settings';render()" style="margin-top:12px;padding:8px 20px;background:#d46b08;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">去配置</button>
+          <button onclick="STATE.mode='admin';STATE.adminTab='settings';location.hash='#/admin';render()" style="margin-top:12px;padding:8px 20px;background:#d46b08;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">去配置</button>
         </div>
         <div style="background:var(--bg-soft);border-radius:8px;padding:12px;margin-top:12px;font-size:11px;color:var(--text-3);line-height:1.8">
           <div style="font-weight:600;margin-bottom:4px">🔍 调试信息（仅未配置时显示）</div>
@@ -2293,7 +2293,7 @@ function renderBaidupanAuth() {
       `}
 
       <div style="margin-top:24px;text-align:center">
-        <a onclick="location.hash='#/admin';STATE.adminTab='settings';render()" style="font-size:13px;color:var(--text-3);cursor:pointer;text-decoration:underline">返回系统设置</a>
+        <a onclick="STATE.mode='admin';STATE.adminTab='settings';location.hash='#/admin';render()" style="font-size:13px;color:var(--text-3);cursor:pointer;text-decoration:underline">返回系统设置</a>
       </div>
     </div>
   </div>`;
@@ -2315,7 +2315,7 @@ function renderBaidupanCallback() {
             '<div style="width:64px;height:64px;background:#f6ffed;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px"><span style="font-size:32px;color:var(--success)">✓</span></div>' +
             '<h2 style="font-size:18px;font-weight:700;color:var(--success);margin:0 0 8px">授权成功</h2>' +
             '<p style="font-size:13px;color:var(--text-2);margin:0 0 20px">Access Token已保存，有效期' + Math.round((token.expires_in||2592000)/86400) + '天</p>' +
-            '<button onclick="location.hash=\'#/admin\';STATE.adminTab=\'settings\';render()" style="padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">返回管理后台</button>';
+            '<button onclick="STATE.mode=\'admin\';STATE.adminTab=\'settings\';location.hash=\'#/admin\';render()" style="padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">返回管理后台</button>';
         }
       }).catch(function(e) {
         const el = document.getElementById('bd-callback-content');
@@ -2326,7 +2326,7 @@ function renderBaidupanCallback() {
             '<p style="font-size:13px;color:var(--text-2);margin:0 0 20px">' + e.message + '</p>' +
             '<div style="display:flex;gap:10px;justify-content:center">' +
             '<button onclick="location.hash=\'#/baidupan-auth\'" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">重新授权</button>' +
-            '<button onclick="location.hash=\'#/admin\';STATE.adminTab=\'settings\';render()" style="padding:10px 20px;background:#fff;color:var(--text-2);border:1px solid var(--border);border-radius:8px;font-size:14px;cursor:pointer">返回设置</button>' +
+            '<button onclick="STATE.mode=\'admin\';STATE.adminTab=\'settings\';location.hash=\'#/admin\';render()" style="padding:10px 20px;background:#fff;color:var(--text-2);border:1px solid var(--border);border-radius:8px;font-size:14px;cursor:pointer">返回设置</button>' +
             '</div>';
         }
       });
@@ -2342,7 +2342,7 @@ function renderBaidupanCallback() {
         <h2 style="font-size:18px;font-weight:700;color:var(--text-1);margin:0 0 8px">正在获取Access Token...</h2>
         <p style="font-size:13px;color:var(--text-3);margin:0">${code ? '已获取授权码，正在换取Token...' : '未获取到授权码'}</p>
         ${code ? `<div style="margin-top:16px;font-size:12px;color:var(--text-3);word-break:break-all">Code: ${code.substring(0,30)}...</div>` : ''}
-        ${!code ? `<div style="margin-top:20px"><button onclick="location.hash='#/baidupan-auth'" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">重新授权</button></div>` : ''}
+        ${!code ? `<div style="margin-top:20px"><button onclick="STATE.mode='user';location.hash='#/baidupan-auth'" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">重新授权</button></div>` : ''}
       </div>
     </div>
   </div>`;
@@ -3155,7 +3155,7 @@ function renderAdSettings(){
         <span style="font-size:12px;color:var(--text-3);margin-left:auto">已用空间：${getSettings().storageType==='baidupan'?'待连接后显示':'约 ' + (JSON.stringify(getAssets()).length / 1024 / 1024).toFixed(1) + ' MB（localStorage）'}</span>
       </div>
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-        <button onclick="saveAllSettings();setTimeout(function(){location.hash='#/baidupan-auth'},300)" style="padding:8px 18px;background:linear-gradient(135deg,#4a6cf7,#6b8cff);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <button onclick="saveAllSettings();STATE.mode='user';setTimeout(function(){location.hash='#/baidupan-auth'},300)" style="padding:8px 18px;background:linear-gradient(135deg,#4a6cf7,#6b8cff);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
           保存并OAuth授权
         </button>
