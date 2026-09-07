@@ -2250,6 +2250,13 @@ function renderBaidupanAuth() {
           <div style="font-size:13px;color:var(--text-2);line-height:1.6">请先到「管理后台 → 系统设置 → 百度网盘存储配置」填写 API Key 和 Secret Key，然后再进行授权。</div>
           <button onclick="location.hash='#/admin';STATE.adminTab='settings';render()" style="margin-top:12px;padding:8px 20px;background:#d46b08;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">去配置</button>
         </div>
+        <div style="background:var(--bg-soft);border-radius:8px;padding:12px;margin-top:12px;font-size:11px;color:var(--text-3);line-height:1.8">
+          <div style="font-weight:600;margin-bottom:4px">🔍 调试信息（仅未配置时显示）</div>
+          <div>当前环境：${window.location.protocol === 'file:' ? '本地文件（file://）' : '在线网站（' + window.location.host + '）'}</div>
+          <div>API Key：${s.bdApiKey ? s.bdApiKey.substring(0,8) + '...' : '(空)'}</div>
+          <div>Secret Key：${s.bdSecretKey ? '已填写(' + s.bdSecretKey.length + '位)' : '(空)'}</div>
+          <div style="margin-top:4px;color:var(--text-2)">提示：本地文件和在线网站的配置是独立保存的，请在同一个环境中完成配置和授权。</div>
+        </div>
       ` : ''}
 
       ${isValid ? `
