@@ -637,6 +637,178 @@ const ASSETS=[
 ];
 
 /* 热销数据（模拟第三方榜单API返回） */
+
+/* ===== 数据层：localStorage持久化 ===== */
+const DB = {
+  get(key, def) {
+    try { const v = localStorage.getItem('ph_' + key); return v ? JSON.parse(v) : def; }
+    catch(e) { return def; }
+  },
+  set(key, val) { localStorage.setItem('ph_' + key, JSON.stringify(val)); },
+  init() {
+    // 初始化素材库（从ASSETS复制）
+    if (!this.get('assets')) {
+      this.set('assets', ASSETS.map(a => ({...a, status:'上架', downloads: Math.floor(Math.random()*500)+50, createdAt: new Date().toISOString()})));
+    }
+    // 初始化用户
+    if (!this.get('users')) {
+      this.set('users', [
+        {id:1, name:'张卖家', phone:'138****8888', points:1280, downloads:47, spent:298, status:'正常', createdAt:'2026-08-15'},
+        {id:2, name:'李铺货', phone:'139****6666', points:3500, downloads:128, spent:896, status:'正常', createdAt:'2026-08-20'},
+        {id:3, name:'王工作室', phone:'137****2222', points:8200, downloads:356, spent:2450, status:'正常', createdAt:'2026-07-10'},
+        {id:4, name:'陈新手', phone:'135****9999', points:50, downloads:3, spent:0, status:'正常', createdAt:'2026-09-01'},
+        {id:5, name:'赵违规', phone:'136****1111', points:0, downloads:12, spent:49, status:'已封禁', createdAt:'2026-08-25'},
+      ]);
+    }
+    // 初始化黑名单
+    if (!this.get('blacklist')) {
+      this.set('blacklist', ['Disney', 'Nike', 'Marvel', 'Supreme', 'LV', 'Gucci', 'Apple', 'Coca-Cola']);
+    }
+    // 初始化审核队列
+    if (!this.get('review_queue')) {
+      this.set('review_queue', ASSETS.slice(0,4).map((a,i) => ({...a, aiSimilarity: 80+Math.floor(Math.random()*15), risk:['低','低','中','低'][i], reviewed:false})));
+    }
+    // 初始化任务记录
+    if (!this.get('tasks')) {
+      this.set('tasks', [
+        {id:1, name:'每日热销款采集', type:'collect', status:'success', progress:100, createdAt:'2026-09-07 08:00', result:'采集9条，成功9条'},
+        {id:2, name:'AI变体生成', type:'variant', status:'success', progress:100, createdAt:'2026-09-07 08:15', result:'生成8张变体'},
+        {id:3, name:'每日热销款采集', type:'collect', status:'success', progress:100, createdAt:'2026-09-06 08:00', result:'采集9条，成功9条'},
+      ]);
+    }
+  }
+};
+DB.init();
+
+/* ===== 素材库管理功能 ===== */
+function getAssets() { return DB.get('assets', []); }
+function saveAssets(list) { DB.set('assets', list); }
+function toggleAssetStatus(id) {
+  const list = getAssets();
+  const item = list.find(a => a.id === id);
+  if (item) {
+    item.status = item.status === '上架' ? '下架' : '上架';
+    saveAssets(list);
+    toast('素材已' + item.status);
+    render();
+  }
+}
+function deleteAsset(id) {
+  if (!confirm('确定删除此素材？此操作不可恢复。')) return;
+  const list = getAssets().filter(a => a.id !== id);
+  saveAssets(list);
+  toast('素材已删除');
+  render();
+}
+function editAsset(id) {
+  const list = getAssets();
+  const item = list.find(a => a.id === id);
+  if (!item) return;
+  const newTitle = prompt('编辑素材标题：', item.title);
+  if (newTitle && newTitle.trim()) {
+    item.title = newTitle.trim();
+    saveAssets(list);
+    toast('素材已更新');
+    render();
+  }
+}
+
+/* ===== 用户管理功能 ===== */
+function getUsers() { return DB.get('users', []); }
+function saveUsers(list) { DB.set('users', list); }
+function toggleUserStatus(id) {
+  const list = getUsers();
+  const user = list.find(u => u.id === id);
+  if (user) {
+    user.status = user.status === '正常' ? '已封禁' : '正常';
+    saveUsers(list);
+    toast('用户已' + (user.status === '正常' ? '解封' : '封禁'));
+    render();
+  }
+}
+function adjustUserPoints(id) {
+  const list = getUsers();
+  const user = list.find(u => u.id === id);
+  if (!user) return;
+  const delta = prompt('调整点数（正数增加，负数扣除）：', '100');
+  if (delta && !isNaN(parseInt(delta))) {
+    user.points = Math.max(0, user.points + parseInt(delta));
+    saveUsers(list);
+    toast('点数已调整，当前余额：' + user.points);
+    render();
+  }
+}
+
+/* ===== 黑名单功能 ===== */
+function getBlacklist() { return DB.get('blacklist', []); }
+function saveBlacklist(list) { DB.set('blacklist', list); }
+function addBl() {
+  const input = document.getElementById('blInput');
+  const word = input ? input.value.trim() : '';
+  if (!word) { toast('请输入关键词'); return; }
+  const list = getBlacklist();
+  if (list.includes(word)) { toast('关键词已存在'); return; }
+  list.push(word);
+  saveBlacklist(list);
+  toast('已添加：' + word);
+  render();
+}
+function removeBl(word) {
+  const list = getBlacklist().filter(w => w !== word);
+  saveBlacklist(list);
+  toast('已移除：' + word);
+  render();
+}
+
+/* ===== 审核功能 ===== */
+function getReviewQueue() { return DB.get('review_queue', []); }
+function saveReviewQueue(list) { DB.set('review_queue', list); }
+function approveAsset(id) {
+  const queue = getReviewQueue();
+  const item = queue.find(a => a.id === id);
+  if (!item) return;
+  // 加入素材库
+  const assets = getAssets();
+  const newId = Math.max(...assets.map(a => a.id), 0) + 1;
+  assets.unshift({...item, id:newId, status:'上架', downloads:0, createdAt:new Date().toISOString()});
+  saveAssets(assets);
+  // 从审核队列移除
+  saveReviewQueue(queue.filter(a => a.id !== id));
+  toast('已通过并上架');
+  render();
+}
+function rejectAsset(id) {
+  if (!confirm('确定拒绝此素材？')) return;
+  const queue = getReviewQueue().filter(a => a.id !== id);
+  saveReviewQueue(queue);
+  toast('已拒绝');
+  render();
+}
+
+/* ===== 任务功能 ===== */
+function getTasks() { return DB.get('tasks', []); }
+function addTask(name, type) {
+  const tasks = getTasks();
+  tasks.unshift({id: Date.now(), name, type, status:'running', progress:0, createdAt:new Date().toLocaleString(), result:'执行中...'});
+  DB.set('tasks', tasks);
+  // 模拟进度
+  let progress = 0;
+  const timer = setInterval(() => {
+    progress += 20;
+    const t = getTasks().find(x => x.name === name && x.status === 'running');
+    if (t) {
+      t.progress = Math.min(progress, 100);
+      if (progress >= 100) {
+        t.status = 'success';
+        t.result = type === 'collect' ? '采集完成，成功9条' : '生成完成，8张变体';
+        clearInterval(timer);
+      }
+      DB.set('tasks', getTasks());
+      if (STATE.adminTab === 'tasks') render();
+    }
+  }, 800);
+}
+
 const HOTDATA={
   1:{rank:3,period:'日榜',sales7d:'2,340',sales30d:'8,920',trend:'+128%',url:'https://temu.com/listing/wolf-head-vintage-tee-12345',reason:'户外露营季+复古美式风格，狼头图案在男性T恤类目持续走高，Temu户外标签下搜索量周增85%',productTitle:'Vintage Wolf Head Outdoor T-Shirt, Mens Casual Graphic Tee',salesTip:'13K+ sold',rating:'4.6',reviewCount:'335'},
   2:{rank:7,period:'周榜',sales7d:'1,890',sales30d:'6,540',trend:'+92%',url:'https://etsy.com/listing/sarcasm-eu-funny-quote-tee-67890',reason:'欧洲市场反讽标语款复购率高，Etsy手工T恤类目搜索"sarcastic quote"月均12万次',productTitle:'Sarcastic Quote T-Shirt, Funny EU Slogan Tee, Unisex Graphic Shirt',salesTip:'8.2K+ sold',rating:'4.8',reviewCount:'1,247'},
@@ -2049,47 +2221,63 @@ function renderAdDashboard(){
 }
 
 function renderAdReview(){
-  const queue=ASSETS.slice(0,6).map((a,i)=>({...a,ai:Math.floor(Math.random()*20)+80,risk:['低','低','中','低','中','低'][i]}));
+  const queue = getReviewQueue();
   return `<div>
     <div class="admin-head"><h1>AI素材审核</h1>
-      <div class="ha"><span class="tag tag-orange" style="font-size:12px;padding:5px 12px">待审核 ${queue.length} 张</span><button class="btn btn-outline btn-sm">批量通过</button></div>
+      <div class="ha">
+        <span class="tag tag-orange" style="font-size:12px;padding:5px 12px">待审核 ${queue.length} 张</span>
+        ${queue.length>0?`<button class="btn btn-outline btn-sm" onclick="if(confirm('确定全部通过？')){getReviewQueue().forEach(a=>approveAsset(a.id));}">批量通过</button>`:''}
+      </div>
     </div>
-    <div class="review-grid">
+    ${queue.length===0?`<div class="card" style="padding:60px;text-align:center"><div style="font-size:48px;margin-bottom:16px">✅</div><div style="font-size:16px;font-weight:600;margin-bottom:8px">审核队列已清空</div><div style="font-size:13px;color:var(--text-3)">新的AI变体生成后会自动进入审核队列</div></div>`:
+    `<div class="review-grid">
       ${queue.map(a=>`<div class="review-card">
         <div class="review-thumb">
-          <span class="ai-badge">AI · 相似度${a.ai}%</span>
-          <div class="tshirt-mock" style="width:50%;height:70%">${tshirtSVG(a)}</div>
+          <span class="ai-badge">AI · 相似度${a.aiSimilarity}%</span>
+          <img src="${a.image}" style="max-width:70%;max-height:70%;object-fit:contain">
         </div>
         <div class="review-body">
           <div class="rt">${a.title}</div>
-          <div class="rm">${a.platform} · ${a.style} · 风险<span style="color:${a.risk==='低'?'var(--success)':a.risk==='中'?'var(--warning)':'var(--danger)'}">${a.risk}</span></div>
-          <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap"><span class="tag tag-green">免费</span></div>
+          <div class="rm">${a.platform} · ${a.style} · 风险<span style="color:${a.risk==='低'?'var(--success)':a.risk==='中'?'#faad14':'var(--danger)'}">${a.risk}</span></div>
+          <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap"><span class="tag tag-green">免费</span><span class="tag tag-gray">${a.topic}</span></div>
           <div class="review-act">
-            <button class="btn btn-outline btn-sm" onclick="toast('已拒绝')">拒绝</button>
-            <button class="btn btn-primary btn-sm" onclick="toast('已通过并上架')">通过上架</button>
+            <button class="btn btn-outline btn-sm" onclick="rejectAsset(${a.id})">拒绝</button>
+            <button class="btn btn-primary btn-sm" onclick="approveAsset(${a.id})">通过上架</button>
           </div>
         </div>
       </div>`).join('')}
-    </div>
+    </div>`}
   </div>`;
 }
 
 function renderAdAssets(){
+  const assets = getAssets();
+  const kw = STATE.assetSearch || '';
+  const filtered = kw ? assets.filter(a => a.title.toLowerCase().includes(kw.toLowerCase()) || a.platform.toLowerCase().includes(kw.toLowerCase())) : assets;
   return `<div>
     <div class="admin-head"><h1>素材库管理</h1>
-      <div class="ha"><div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:0 10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86909C" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input style="border:none;padding:8px 0;font-size:13px;width:160px" placeholder="搜ID或标题"></div><button class="btn btn-primary btn-sm">批量编辑</button></div>
+      <div class="ha">
+        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:0 10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86909C" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input style="border:none;padding:8px 0;font-size:13px;width:160px" placeholder="搜ID或标题" value="${kw}" onkeyup="if(event.key==='Enter'){STATE.assetSearch=this.value;render()}">
+        </div>
+        <span style="font-size:12px;color:var(--text-3)">共 ${filtered.length} 条</span>
+      </div>
     </div>
-    <div class="card" class="overflow-hidden"><table class="dtable">
-      <thead><tr><th>预览</th><th>标题</th><th>平台</th><th>风格</th><th>点数</th><th>下载量</th><th>状态</th><th>操作</th></tr></thead>
-      <tbody>${ASSETS.map(a=>`<tr>
-        <td><div style="width:44px;height:36px;background:var(--bg-soft);border-radius:4px;display:flex;align-items:center;justify-content:center"><div style="width:70%;height:80%">${tshirtSVG(a)}</div></div></td>
+    <div class="card overflow-hidden"><table class="dtable">
+      <thead><tr><th>预览</th><th>标题</th><th>平台</th><th>风格</th><th>下载量</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>${filtered.map(a=>`<tr>
+        <td><div style="width:44px;height:36px;background:var(--bg-soft);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="${a.image}" style="max-width:80%;max-height:80%;object-fit:contain"></div></td>
         <td style="max-width:200px;font-size:12px">${a.title}</td>
         <td><span class="tag tag-blue">${a.platform}</span></td>
         <td><span class="tag tag-gray">${a.style}</span></td>
-        <td style="color:var(--success);font-weight:600">免费</td>
-        <td>${Math.floor(Math.random()*800)+50}</td>
-        <td><span class="tag tag-green">已上架</span></td>
-        <td><button class="btn btn-ghost btn-sm" onclick="toast('打开编辑')">编辑</button><button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已下架')">下架</button></td>
+        <td>${a.downloads || 0}</td>
+        <td>${a.status==='上架'?'<span class="tag tag-green">已上架</span>':'<span class="tag tag-gray">已下架</span>'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" onclick="editAsset(${a.id})">编辑</button>
+          <button class="btn btn-ghost btn-sm" style="color:${a.status==='上架'?'var(--danger)':'var(--success)'}" onclick="toggleAssetStatus(${a.id})">${a.status==='上架'?'下架':'上架'}</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteAsset(${a.id})">删除</button>
+        </td>
       </tr>`).join('')}</tbody>
     </table></div>
   </div>`;
@@ -2403,9 +2591,14 @@ function renderAdRanking(){
 }
 
 function renderAdTasks(){
+  const tasks = getTasks();
   return `<div>
     <div class="admin-head"><h1>自动化任务监控</h1>
-      <div class="ha"><button class="btn btn-outline btn-sm">Actions日志</button><button class="btn btn-primary btn-sm" onclick="toast('已创建新任务')">新建任务</button></div>
+      <div class="ha">
+        <button class="btn btn-outline btn-sm" onclick="addTask('手动采集任务','collect')">手动采集</button>
+        <button class="btn btn-outline btn-sm" onclick="addTask('手动变体生成','variant')">生成变体</button>
+        <span style="font-size:12px;color:var(--text-3)">共 ${tasks.length} 条记录</span>
+      </div>
     </div>
     <div class="card" style="padding:18px;margin-bottom:16px">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">GitHub Actions 流水线</h3>
@@ -2413,10 +2606,15 @@ function renderAdTasks(){
         ${['定时触发','拉取榜单API','WD14打标','反向排斥约束','AI变体生成','双存储归档'].map((s,i)=>`<span style="background:${i<4?'var(--primary-light)':'var(--accent-light)'};color:${i<4?'var(--primary)':'var(--accent)'};padding:6px 12px;border-radius:5px;font-weight:600">${i+1}. ${s}</span>${i<5?'<span style="color:var(--text-3)">→</span>':''}`).join('')}
       </div>
     </div>
-    <div class="card" class="p-18"><h3 style="font-size:14px;font-weight:700;margin-bottom:14px">任务队列</h3>
-      ${[...TASKS,...TASKS.slice(0,2).map(t=>({...t,name:t.name+' (历史)',status:'success',progress:100,desc:'已完成'}))].map(t=>`<div class="task-item">
-        <div class="ti" style="background:${t.color}18;color:${t.color}">${t.icon}</div>
-        <div class="tinfo"><div class="tn">${t.name}</div><div class="td">${t.desc}</div>${t.status==='running'?'<div class="pbar"><div class="pf" style="width:'+t.progress+'%"></div></div>':''}</div>
+    <div class="card p-18"><h3 style="font-size:14px;font-weight:700;margin-bottom:14px">任务记录</h3>
+      ${tasks.length===0?'<div style="padding:40px;text-align:center;color:var(--text-3)">暂无任务记录</div>':
+      tasks.map(t=>`<div class="task-item">
+        <div class="ti" style="background:${t.type==='collect'?'var(--primary-light)':'var(--accent-light)'};color:${t.type==='collect'?'var(--primary)':'var(--accent)'}">${t.type==='collect'?'📥':'🎨'}</div>
+        <div class="tinfo">
+          <div class="tn">${t.name}</div>
+          <div class="td">${t.createdAt} · ${t.result || ''}</div>
+          ${t.status==='running'?'<div class="pbar"><div class="pf" style="width:'+t.progress+'%"></div></div>':''}
+        </div>
         <div>${t.status==='running'?'<span class="tag tag-blue">'+t.progress+'%</span>':t.status==='success'?'<span class="tag tag-green">完成</span>':'<span class="tag tag-gray">等待</span>'}</div>
       </div>`).join('')}
     </div>
@@ -2424,24 +2622,24 @@ function renderAdTasks(){
 }
 
 function renderAdUsers(){
-  const users=[
-    {name:'张卖家',phone:'138****8888',points:1280,dl:47,spent:298,st:'正常'},
-    {name:'李铺货',phone:'139****6666',points:3500,dl:128,spent:896,st:'正常'},
-    {name:'王工作室',phone:'137****2222',points:8200,dl:356,spent:2450,st:'正常'},
-    {name:'陈新手',phone:'135****9999',points:50,dl:3,spent:9.9,st:'正常'},
-    {name:'赵违规',phone:'136****1111',points:0,dl:12,spent:49,st:'已封禁'},
-  ];
+  const users = getUsers();
   return `<div>
-    <div class="admin-head"><h1>用户管理</h1></div>
-    <div class="card" class="overflow-hidden"><table class="dtable">
-      <thead><tr><th>用户</th><th>手机号</th><th>余额</th><th>下载数</th><th>累计消费</th><th>状态</th><th>操作</th></tr></thead>
+    <div class="admin-head"><h1>用户管理</h1>
+      <div class="ha"><span style="font-size:12px;color:var(--text-3)">共 ${users.length} 个用户</span></div>
+    </div>
+    <div class="card overflow-hidden"><table class="dtable">
+      <thead><tr><th>用户</th><th>手机号</th><th>注册时间</th><th>余额</th><th>下载数</th><th>累计消费</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>${users.map(u=>`<tr>
         <td><div class="flex-center-gap"><div class="avatar" style="width:28px;height:28px;font-size:11px">${u.name.charAt(0)}</div><span style="font-weight:600">${u.name}</span></div></td>
-        <td>${u.phone}</td><td class="text-accent-bold">${u.points}</td>
-        <td>${u.dl}</td><td>¥${u.spent}</td>
-        <td>${u.st==='正常'?'<span class="tag tag-green">正常</span>':'<span class="tag tag-red">已封禁</span>'}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="toast('打开点数调整')">调点数</button>
-          ${u.st==='正常'?`<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已封禁')">封禁</button>`:`<button class="btn btn-ghost btn-sm" style="color:var(--success)" onclick="toast('已解封')">解封</button>`}</td>
+        <td>${u.phone}</td>
+        <td style="font-size:12px;color:var(--text-3)">${u.createdAt}</td>
+        <td style="color:var(--accent);font-weight:700">${u.points}</td>
+        <td>${u.downloads}</td><td>¥${u.spent}</td>
+        <td>${u.status==='正常'?'<span class="tag tag-green">正常</span>':'<span class="tag tag-red">已封禁</span>'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" onclick="adjustUserPoints(${u.id})">调点数</button>
+          ${u.status==='正常'?`<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toggleUserStatus(${u.id})">封禁</button>`:`<button class="btn btn-ghost btn-sm" style="color:var(--success)" onclick="toggleUserStatus(${u.id})">解封</button>`}
+        </td>
       </tr>`).join('')}</tbody>
     </table></div>
   </div>`;
@@ -2456,7 +2654,7 @@ function renderAdRisk(){
       <h3 style="font-size:14px;font-weight:700;margin-bottom:6px">高危关键词黑名单</h3>
       <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">AI生成阶段命中以下关键词的素材自动拦截，从源头规避IP侵权</p>
       <div class="bl-input"><input id="blInput" placeholder="输入品牌或IP名，如 Disney、Nike..." onkeydown="if(event.key==='Enter')addBl()"><button class="btn btn-primary" onclick="addBl()">添加</button></div>
-      <div class="bl-tags" id="blTags">${BLACKLIST.map(w=>`<div class="bl-tag">${w}<span class="rm" onclick="this.parentElement.remove();toast('已移除 ${w}')">×</span></div>`).join('')}</div>
+      <div class="bl-tags" id="blTags">${getBlacklist().map(w=>`<div class="bl-tag">${w}<span class="rm" onclick="removeBl('${w}')">×</span></div>`).join('')}</div>
     </div>
     <div class="chart-row">
       <div class="chart-card"><h3>近7天风控拦截</h3>
