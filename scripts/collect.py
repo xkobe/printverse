@@ -111,6 +111,21 @@ def run_actor(actor_id, keyword, limit):
         try:
             print(f"  尝试参数格式 {i+1}/{len(payloads)}: {list(payload.keys())}")
             resp = requests.post(url, params=params, json=payload, timeout=200)
+            
+            # 检测额度耗尽，立即停止所有采集
+            if resp.status_code == 403:
+                try:
+                    err = resp.json()
+                    err_msg = err.get("error", {}).get("message", "")
+                    if "limit" in err_msg.lower() or "usage" in err_msg.lower():
+                        print("=" * 60)
+                        print("❌ Apify额度已耗尽！")
+                        print(f"   错误: {err_msg}")
+                        print("   请充值或更换Token后重试")
+                        print("=" * 60)
+                        sys.exit(1)
+                except:
+                    pass
             if resp.status_code in (200, 201):
                 data = resp.json()
                 if isinstance(data, list) and len(data) > 0:
@@ -212,6 +227,29 @@ def main():
     if not APIFY_TOKEN:
         print("❌ 未设置APIFY_TOKEN环境变量")
         sys.exit(1)
+    
+    # 预检Token有效性和额度
+    print(f"Token: {APIFY_TOKEN[:15]}...{APIFY_TOKEN[-4:]}")
+    try:
+        resp = requests.get(f"https://api.apify.com/v2/users/me?token={APIFY_TOKEN}", timeout=10)
+        if resp.status_code == 200:
+            user = resp.json().get("data", {})
+            monthly_usage = user.get("monthlyUsage", {})
+            total_usage = monthly_usage.get("totalUsageUsd", 0)
+            usage_limit = monthly_usage.get("usageLimitUsd", 5)
+            print(f"账号: {user.get('username', 'N/A')}")
+            print(f"本月已用: ${total_usage:.2f} / ${usage_limit:.2f}")
+            if total_usage >= usage_limit * 0.95:
+                print(f"⚠️  额度即将耗尽！剩余不足5%")
+            else:
+                print(f"✅ 额度充足，剩余 ${usage_limit - total_usage:.2f}")
+        elif resp.status_code == 401:
+            print("❌ Token无效，请检查APIFY_TOKEN")
+            sys.exit(1)
+        else:
+            print(f"⚠️  无法获取账号信息: {resp.status_code}")
+    except Exception as e:
+        print(f"⚠️  预检失败: {e}")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
