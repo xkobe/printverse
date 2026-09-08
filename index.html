@@ -963,12 +963,26 @@ async function refreshCollectData(){
 // GitHub API 配置与触发
 
 /* ===== GitHub API集成 ===== */
-function getGithubToken(){ return localStorage.getItem('printhunt_gh_token') || ''; }
+function getGithubToken(){
+  // 优先从系统设置读取，其次从独立存储读取
+  try {
+    const settings = JSON.parse(localStorage.getItem('ph_settings') || '{}');
+    if(settings.githubToken) return settings.githubToken;
+  } catch(e){}
+  return localStorage.getItem('printhunt_gh_token') || '';
+}
 function saveGithubToken(){
   const input = document.getElementById('gh-token-input');
   if(input){
-    localStorage.setItem('printhunt_gh_token', input.value.trim());
-    toast('GitHub Token已保存到本地浏览器');
+    const token = input.value.trim();
+    localStorage.setItem('printhunt_gh_token', token);
+    // 同时保存到系统设置
+    try {
+      const settings = JSON.parse(localStorage.getItem('ph_settings') || '{}');
+      settings.githubToken = token;
+      localStorage.setItem('ph_settings', JSON.stringify(settings));
+    } catch(e){}
+    toast('GitHub Token已保存');
   }
 }
 async function triggerVariantWorkflow(limit, variantsPerProduct){
@@ -2486,7 +2500,7 @@ function saveAllSettings() {
   const scheduleLimit = document.getElementById('schedule-limit');
 
   if (apifyInput) s.apifyToken = apifyInput.value.trim();
-  if (ghInput) s.githubToken = ghInput.value.trim();
+  if (ghInput) { s.githubToken = ghInput.value.trim(); localStorage.setItem('printhunt_gh_token', s.githubToken); }
   if (limitInput) s.collectLimit = parseInt(limitInput.value) || 30;
   if (retryInput) s.retryCount = parseInt(retryInput.value) || 2;
   if (proxySelect) s.proxyType = proxySelect.value;
