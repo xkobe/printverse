@@ -1008,6 +1008,104 @@ function saveGithubToken(){
     toast('GitHub Token已保存');
   }
 }
+async /* ===== CSV批量导入热销款 ===== */
+function downloadCSVTemplate() {
+  const header = 'title,price,sales,rating,reviews,image,url,keyword,rank,period\n';
+  const sample = [
+    'Vintage Wolf Head Graphic T-Shirt Men,$8.99,12.5k sold,4.8,3.2k reviews,https://example.com/wolf.jpg,https://temu.com/wolf,graphic tee,1,daily',
+    'Funny Sarcasm Quote Slogan Tee,$7.50,8.3k sold,4.6,2.1k reviews,https://example.com/sarcasm.jpg,https://temu.com/sarcasm,funny shirt,2,daily',
+    'Minimalist Mountain Hiking Outdoor Tee,$9.99,5.2k sold,4.7,1.8k reviews,https://example.com/mountain.jpg,https://temu.com/mountain,outdoor shirt,1,weekly',
+  ].join('\n');
+  const csv = header + sample;
+  const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'printhunt_hot_products_template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV模板已下载');
+}
+
+function parseCSV(text) {
+  // 简单CSV解析，支持引号包裹
+  const lines = text.replace(/\r\n/g, '\n').split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim());
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h] = values[idx] || '';
+    });
+    result.push(obj);
+  }
+  return result;
+}
+
+function importCSVProducts(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const rows = parseCSV(e.target.result);
+      if (rows.length === 0) {
+        toast('CSV文件为空或格式错误');
+        return;
+      }
+      // 转换为系统数据格式
+      const today = new Date().toISOString();
+      const newProducts = rows.map((row, idx) => {
+        const period = (row.period || 'daily').toLowerCase().includes('week') ? 'weekly' : 'daily';
+        return {
+          id: Date.now() + idx,
+          title: row.title || '未命名商品',
+          price: row.price || '$0.00',
+          price_num: parseFloat((row.price || '0').replace(/[^\d.]/g, '')) || 0,
+          sales: row.sales || '0 sold',
+          sales_num: parseFloat((row.sales || '0').replace(/[^\d.]/g, '')) || 0,
+          rating: parseFloat(row.rating) || 0,
+          reviews: row.reviews || '0 reviews',
+          review_num: parseFloat((row.reviews || '0').replace(/[^\d.]/g, '')) || 0,
+          image: row.image || '',
+          url: row.url || '',
+          keyword: row.keyword || 'manual import',
+          rank: parseInt(row.rank) || idx + 1,
+          period: period,
+          platform: 'Temu',
+          collectedAt: today,
+          source: 'csv_import'
+        };
+      });
+      // 合并到现有数据
+      const existing = PRODUCTS_DATA && PRODUCTS_DATA.products ? PRODUCTS_DATA.products : [];
+      const merged = [...newProducts, ...existing];
+      PRODUCTS_DATA = {
+        products: merged,
+        collectedAt: today,
+        isMockData: false,
+        source: 'csv_import'
+      };
+      // 保存到localStorage
+      localStorage.setItem('printhunt_products', JSON.stringify(PRODUCTS_DATA));
+      // 显示结果
+      const dailyCount = newProducts.filter(p => p.period === 'daily').length;
+      const weeklyCount = newProducts.filter(p => p.period === 'weekly').length;
+      const resultEl = document.getElementById('csvImportResult');
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = '<div style="padding:10px 14px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:8px;font-size:13px;color:#52c41a">✅ 成功导入 ' + newProducts.length + ' 条热销款（日榜' + dailyCount + '条，周榜' + weeklyCount + '条），点击「刷新数据」查看</div>';
+      toast('✅ 成功导入 ' + newProducts.length + ' 条热销款');
+      input.value = '';
+    } catch(err) {
+      toast('CSV解析失败: ' + err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
 async function triggerVariantWorkflow(limit, variantsPerProduct){
   const token = getGithubToken();
   if(!token){ toast('请先在「Apify配置」页面填写GitHub Token'); STATE.adminTab='settings'; render(); return; }
@@ -2980,6 +3078,24 @@ function renderAdCollect(){
       <div class="stat-card"><div class="sl">日榜</div><div class="sv">${dailyItems.length}</div><div class="sc up">昨日销量TOP</div></div>
       <div class="stat-card"><div class="sl">周榜</div><div class="sv">${weeklyItems.length}</div><div class="sc up">上周销量TOP</div></div>
       <div class="stat-card"><div class="sl">待变体</div><div class="sv">${pendingCount}</div><div class="sc down">${pendingCount>0?'需尽快处理':'全部完成'}</div></div>
+    </div>
+
+    <!-- CSV批量上传 -->
+    <div class="chart-card" style="margin-bottom:20px;padding:16px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">📥 人工导入热销款</div>
+          <div style="font-size:12px;color:var(--text-3)">支持CSV批量导入，适用于手动整理的选品数据</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="downloadCSVTemplate()">📄 下载CSV模板</button>
+          <label class="btn btn-primary btn-sm" style="cursor:pointer;margin:0">
+            📤 上传CSV
+            <input type="file" accept=".csv" style="display:none" onchange="importCSVProducts(this)">
+          </label>
+        </div>
+      </div>
+      <div id="csvImportResult" style="margin-top:12px;display:none"></div>
     </div>
 
     <!-- 采集结果（核心区域） -->
