@@ -2877,151 +2877,103 @@ function renderAdAssets(){
 
 function renderAdCollect(){
   const items = productsToCollectItems(PRODUCTS_DATA);
-  const todayCount = PRODUCTS_DATA ? PRODUCTS_DATA.total : COLLECT_HISTORY.filter(function(h){return h.time.startsWith('2026-09-03')&&h.status==='已完成';}).reduce(function(s,h){return s+h.success;},0);
-  const weekCount = items.length;
-  const totalCount = items.length;
-  const successRate = totalCount>0 ? Math.round(weekCount/totalCount*100) : 0;
-  const pendingCount = items.filter(function(i){return i.status==='待变体';}).length;
+  const dailyItems = items.filter(i => i.period === '日榜' || i.period === 'daily');
+  const weeklyItems = items.filter(i => i.period === '周榜' || i.period === 'weekly');
+  const activeTab = STATE.collectTab || 'daily';
+  const showItems = activeTab === 'daily' ? dailyItems : weeklyItems;
+  const pendingCount = items.filter(i => i.status === '待变体').length;
+  const variantCount = items.filter(i => i.status === '已变体').length;
+  const lastCollect = PRODUCTS_DATA && PRODUCTS_DATA.collectedAt ? PRODUCTS_DATA.collectedAt.slice(0,16).replace('T',' ') : '未采集';
+
   return `<div>
     <div class="admin-head"><h1>热销款采集</h1>
       <div class="ha">
         <button class="btn btn-outline btn-sm" onclick="STATE.adminTab='settings';render()">系统设置</button>
         <button class="btn btn-outline btn-sm" onclick="refreshCollectData()">刷新数据</button>
-        <button class="btn btn-outline btn-sm" onclick="triggerCollectWorkflow()">手动采集</button>
-        <button class="btn btn-primary btn-sm" onclick="triggerVariantWorkflow(5,2)">批量生成变体</button>
+        <button class="btn btn-primary btn-sm" onclick="triggerCollectWorkflow()">🔄 手动采集</button>
       </div>
     </div>
-    <!-- 版权风险提示 -->
-    <div style="background:#fff0f0;border:1px solid #ffccc7;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px">
-      <span style="font-size:18px">⚠️</span>
-      <div style="font-size:12px;color:#87140a;line-height:1.7">
-        <strong>版权合规提示：</strong>本模块仅获取公开市场元数据（销量、排名、榜单趋势）用于选品参考。原始采集图片<strong>禁止直接商用分发</strong>，仅作为AI生成变体的内部参考素材。所有对外提供下载的图案必须经过AI变体重绘并人工审核后才可上架素材库。
-      </div>
+
+    <!-- 状态概览 -->
+    <div class="stat-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="sl">今日采集</div><div class="sv">${items.length}</div><div class="sc up">${PRODUCTS_DATA?'实时数据':'模拟数据'}</div></div>
+      <div class="stat-card"><div class="sl">日榜</div><div class="sv">${dailyItems.length}</div><div class="sc up">昨日销量TOP</div></div>
+      <div class="stat-card"><div class="sl">周榜</div><div class="sv">${weeklyItems.length}</div><div class="sc up">上周销量TOP</div></div>
+      <div class="stat-card"><div class="sl">待变体</div><div class="sv">${pendingCount}</div><div class="sc down">${pendingCount>0?'需尽快处理':'全部完成'}</div></div>
     </div>
-    <!-- 采集统计 -->
-    <div class="stat-row">
-      <div class="stat-card"><div class="sl">采集素材总数</div><div class="sv">${todayCount}</div><div class="sc up">${PRODUCTS_DATA?'实时数据':'模拟数据'}</div></div>
-      <div class="stat-card"><div class="sl">累计采集素材</div><div class="sv">${weekCount}</div><div class="sc up">近7天数据</div></div>
-      <div class="stat-card"><div class="sl">采集成功率</div><div class="sv">${successRate}%</div><div class="sc up">Apify API 稳定</div></div>
-      <div class="stat-card"><div class="sl">待AI变体</div><div class="sv">${pendingCount}</div><div class="sc down">需尽快处理</div></div>
-    </div>
-    <!-- 采集任务配置 -->
+
+    <!-- 采集结果（核心区域） -->
     <div class="chart-card" style="margin-bottom:24px">
-      <h3 style="margin:0 0 16px">采集任务配置</h3>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
-        <div>
-          <label class="form-label">采集平台（可多选）</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${['Temu','Etsy','Shein'].map((p,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-1);cursor:pointer"><input type="checkbox" checked style="accent-color:#0175cc">${p}</label>`).join('')}
-            <span style="font-size:11px;color:var(--border);text-decoration:line-through">TikTok（暂未启用）</span>
-          </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <h3 style="margin:0">采集结果</h3>
+          <span style="font-size:11px;color:var(--text-3)">上次采集：${lastCollect}</span>
         </div>
-        <div>
-          <label class="form-label">榜单周期</label>
-          <select style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
-            <option>日榜</option><option>周榜</option><option>月榜</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">单次采集上限（条）</label>
-          <input type="number" value="30" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box">
-        </div>
-        <div>
-          <label class="form-label">定时采集</label>
-          <div style="display:flex;align-items:center;gap:8px;padding-top:4px">
-            <label style="position:relative;display:inline-block;width:36px;height:20px;cursor:pointer">
-              <input type="checkbox" checked style="opacity:0;width:0;height:0">
-              <span style="position:absolute;inset:0;background:#0175cc;border-radius:20px;transition:.2s"></span>
-              <span style="position:absolute;left:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;transform:translateX(16px)"></span>
-            </label>
-            <span style="font-size:12px;color:var(--text-1)">每日06:00自动采集</span>
-          </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="STATE.collectTab='daily';render()" style="padding:6px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;${activeTab==='daily'?'background:#0175cc;color:#fff':'background:var(--bg-soft);color:var(--text-2)'}">日榜（${dailyItems.length}）</button>
+          <button onclick="STATE.collectTab='weekly';render()" style="padding:6px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;${activeTab==='weekly'?'background:#0175cc;color:#fff':'background:var(--bg-soft);color:var(--text-2)'}">周榜（${weeklyItems.length}）</button>
+          <button class="btn btn-primary btn-sm" onclick="triggerVariantWorkflow(5,2)" style="margin-left:8px">批量生成变体</button>
         </div>
       </div>
-      <div style="margin-bottom:16px">
-        <label class="form-label">POD热门搜索关键词（每行一个，采集时随机选取）</label>
-        <textarea rows="4" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;font-family:monospace;resize:vertical">graphic tee
-vintage t shirt design
-funny slogan shirt
-retro animal print
-floral sublimation design
-quote shirt aesthetic
-boho minimalist tee
-western country shirt
-halloween spooky design
-christmas holiday tee</textarea>
-        <div class="hint-text-top">已预设10个POD垂直赛道热门关键词，可自行增删</div>
-      </div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-primary btn-sm" onclick="toast('采集任务已提交，Apify正在执行，完成后Webhook自动回调落库')">提交采集任务</button>
-        <button class="btn btn-outline btn-sm" onclick="toast('配置已保存')">保存配置</button>
-        <span style="font-size:11px;color:var(--text-3);align-self:center;margin-left:auto">Apify API 状态：<span style="color:var(--success);font-weight:600">● 正常</span> · 本月剩余额度：$4.99 / $5（免费版）</span>
-      </div>
+
+      ${showItems.length === 0 ? `
+        <div style="text-align:center;padding:60px 20px;color:var(--text-3)">
+          <div style="font-size:48px;margin-bottom:16px">📦</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:8px">暂无采集数据</div>
+          <div style="font-size:13px;margin-bottom:20px">点击右上角「手动采集」开始采集 Temu 热销款</div>
+          <button class="btn btn-primary" onclick="triggerCollectWorkflow()">开始采集</button>
+        </div>
+      ` : `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+          ${showItems.map(item => `<div style="border:1px solid var(--border-light);border-radius:10px;overflow:hidden;background:#fff;transition:all .2s" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+            <div style="display:flex;gap:12px;padding:12px">
+              <div style="width:80px;height:80px;background:var(--bg-soft);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+                <img src="${item.image}" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;color:var(--text-1);line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${item.title}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                  <span style="font-size:11px;color:#FB5454;font-weight:700">${item.price}</span>
+                  <span style="font-size:11px;color:var(--text-3)">销量 ${item.sales}</span>
+                  ${item.rating ? `<span style="font-size:11px;color:var(--text-3)">⭐${item.rating}</span>` : ''}
+                  ${item.reviewCount ? `<span style="font-size:11px;color:var(--text-3)">评论${item.reviewCount}</span>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span class="tag ${item.status==='已变体'?'tag-green':item.status==='待变体'?'tag-orange':'tag-gray'}" style="font-size:10px;padding:2px 6px">${item.status}</span>
+                  <span style="font-size:10px;color:var(--text-3)">#${item.rank} · ${item.collectedAt ? item.collectedAt.slice(5,10) : ''}</span>
+                </div>
+              </div>
+            </div>
+            <div style="padding:8px 12px;border-top:1px solid var(--border-light);display:flex;gap:6px">
+              ${item.status === '待变体' ? `
+                <button class="btn btn-primary btn-sm" style="flex:1;padding:5px;font-size:11px" onclick="triggerVariantWorkflow(1,2)">生成变体</button>
+              ` : item.status === '已变体' ? `
+                <button class="btn btn-outline btn-sm" style="flex:1;padding:5px;font-size:11px" onclick="navigate('detail',{id:${item.variantId || 1}})">查看变体</button>
+              ` : `
+                <button class="btn btn-outline btn-sm" style="flex:1;padding:5px;font-size:11px" onclick="toast('已提交审核')">提交审核</button>
+              `}
+              <button class="btn btn-ghost btn-sm" style="padding:5px 8px;font-size:11px" onclick="window.open('${item.url}','_blank')">原链接</button>
+            </div>
+          </div>`).join('')}
+        </div>
+      `}
     </div>
-    <!-- 采集历史记录 -->
-    <div class="chart-card" style="margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h3 style="margin:0">采集历史记录</h3>
-        <div class="flex-gap">
-          <select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
-            <option>全部平台</option><option>Temu</option><option>Etsy</option><option>Shein</option><option>TikTok</option>
-          </select>
-          <select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px">
-            <option>全部状态</option><option>已完成</option><option>采集中</option><option>失败</option>
-          </select>
-        </div>
-      </div>
+
+    <!-- 最近采集记录 -->
+    <div class="chart-card">
+      <h3 style="margin:0 0 16px">最近采集记录</h3>
       <table class="dtable">
-        <thead><tr><th>任务ID</th><th>Apify runId</th><th>平台</th><th>周期</th><th>采集数</th><th>成功/失败</th><th>耗时</th><th>状态</th><th>采集时间</th><th>失败原因</th><th>操作</th></tr></thead>
-        <tbody>${COLLECT_HISTORY.map(h=>`<tr>
-          <td><code class="gray-tag">${h.id}</code></td>
-          <td><code style="background:#f0f7ff;padding:2px 6px;border-radius:4px;font-size:11px;color:#0175cc">${h.runId}</code></td>
-          <td><span class="tag tag-blue">${h.platform}</span></td>
+        <thead><tr><th>时间</th><th>周期</th><th>采集数</th><th>成功</th><th>失败</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>${COLLECT_HISTORY.slice(0,5).map(h => `<tr>
+          <td style="font-size:12px">${h.time}</td>
           <td>${h.period}</td>
           <td>${h.count}</td>
-          <td><span style="color:var(--success);font-weight:600">${h.success}</span> / <span style="color:#F53F3F">${h.failed}</span></td>
-          <td>${h.duration}</td>
+          <td style="color:var(--success);font-weight:600">${h.success}</td>
+          <td style="color:var(--danger)">${h.failed}</td>
           <td><span class="tag ${h.status==='已完成'?'tag-green':h.status==='失败'?'tag-red':'tag-orange'}">${h.status}</span></td>
-          <td style="font-size:12px">${h.time}</td>
-          <td style="font-size:11px;color:${h.failed>0?'#F53F3F':'var(--text-3)'};max-width:160px">${h.failReason}</td>
-          <td>
-            <button class="btn btn-outline btn-sm" onclick="toast('查看任务 ${h.id} 详情')">详情</button>
-            ${h.status==='失败'?`<button class="btn btn-primary btn-sm" style="margin-left:4px" onclick="toast('已重新提交采集任务 ${h.id}')">重试</button>`:''}
-          </td>
+          <td>${h.status==='失败'?`<button class="btn btn-primary btn-sm" onclick="triggerCollectWorkflow()">重试</button>`:`<button class="btn btn-outline btn-sm" onclick="toast('查看详情')">详情</button>`}</td>
         </tr>`).join('')}</tbody>
       </table>
-    </div>
-    <!-- 采集素材库 -->
-    <div class="chart-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h3 style="margin:0">采集素材库（原始热销图案 · 待AI变体处理）</h3>
-        <div class="flex-gap">
-          <span class="tag tag-green">已变体 ${items.filter(i=>i.status==='已变体').length}</span>
-          <span class="tag tag-orange">待变体 ${items.filter(i=>i.status==='待变体').length}</span>
-          <span class="tag tag-gray">待审核 ${items.filter(i=>i.status==='待审核').length}</span>
-        </div>
-      </div>
-      <div style="background:#f0f7ff;border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:#0175cc">
-        🔒 原始采集图仅内部参考，禁止直接发布到前端素材库。必须点击「生成AI变体」→ 人工审核通过后才可对外提供下载。
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
-        ${items.map(item=>`<div style="border:1px solid #eee;border-radius:8px;overflow:hidden;background:#fff">
-          <div style="position:relative;aspect-ratio:1;background:#fafafa;display:flex;align-items:center;justify-content:center">
-            <img src="${item.image}" style="max-width:80%;max-height:80%;object-fit:contain">
-            <span style="position:absolute;top:6px;left:6px;font-size:10px;padding:2px 6px;border-radius:3px;background:#0175cc;color:#fff;font-weight:600">${item.platform}</span>
-            <span style="position:absolute;top:6px;right:6px;font-size:10px;padding:2px 6px;border-radius:3px;background:${item.status==='已变体'?'var(--success)':item.status==='待变体'?'#FB5454':'var(--text-3)'};color:#fff;font-weight:600">${item.status}</span>
-          </div>
-          <div style="padding:8px 10px">
-            <div style="font-size:11px;font-weight:600;color:var(--text-1);margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${item.title}</div>
-            <div style="font-size:10px;color:var(--text-3);display:flex;justify-content:space-between;margin-bottom:6px">
-              <span>${item.period}#${item.rank}</span>
-              <span style="color:var(--success);font-weight:600">${item.trend}</span>
-            </div>
-            <div style="font-size:10px;color:var(--text-3);margin-bottom:8px">销量 ${item.sales} · ${item.collectedAt.slice(5)}</div>
-            ${item.status==='待变体'?`<button class="btn btn-primary btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="triggerVariantWorkflow(1,2)" title="对该商品生成变体">生成AI变体</button>`:item.status==='已变体'?`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="navigate('detail',{id:${item.variantId}})">查看变体</button>`:`<button class="btn btn-outline btn-sm" style="width:100%;padding:4px;font-size:11px" onclick="toast('已提交审核，审核通过后可发布')">提交审核</button>`}
-          </div>
-        </div>`).join('')}
-      </div>
     </div>
   </div>`;
 }
