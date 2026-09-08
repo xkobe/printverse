@@ -722,6 +722,11 @@ const DB = {
         connectionStatus: 'unknown'
       });
     }
+    // 初始化素材库（首次访问时加载默认数据）
+    const assets = this.get('assets', null);
+    if (!assets || assets.length === 0) {
+      this.set('assets', ASSETS);
+    }
   }
 };
 DB.init();
@@ -815,12 +820,27 @@ function approveAsset(id) {
   if (!item) return;
   // 加入素材库
   const assets = getAssets();
-  const newId = Math.max(...assets.map(a => a.id), 0) + 1;
-  assets.unshift({...item, id:newId, status:'上架', downloads:0, createdAt:new Date().toISOString()});
+  const newId = assets.length > 0 ? Math.max(...assets.map(a => a.id), 0) + 1 : 1;
+  const today = new Date().toISOString().split('T')[0];
+  assets.unshift({
+    id: newId,
+    title: item.title,
+    platform: item.platform || 'Temu',
+    period: item.period || 'daily',
+    style: item.style || 'AI生成',
+    topic: item.topic || '热销款',
+    cost: 0,
+    hot: item.hot || false,
+    image: item.image,
+    date: item.date || today,
+    downloads: 0,
+    status: '上架',
+    createdAt: new Date().toISOString()
+  });
   saveAssets(assets);
   // 从审核队列移除
   saveReviewQueue(queue.filter(a => a.id !== id));
-  toast('已通过并上架');
+  toast('已通过并上架到素材库');
   render();
 }
 function rejectAsset(id) {
@@ -1306,7 +1326,7 @@ function assetCard(a,opts={}){
 /* ===== 热销款原款采集展示（选品助手风格） ===== */
 function renderHotProducts(){
   const products = PRODUCTS_DATA ? PRODUCTS_DATA.products : [];
-  const updatedAt = PRODUCTS_DATA ? PRODUCTS_DATA.updated_at : '';
+  const updatedAt = PRODUCTS_DATA ? (PRODUCTS_DATA.collectedAt || PRODUCTS_DATA.updated_at) : '';
   const displayProducts = products.slice(0, 8);
 
   if(displayProducts.length === 0){
@@ -1315,7 +1335,7 @@ function renderHotProducts(){
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
         <div>
           <h2 style="font-size:22px;font-weight:800;margin:0;color:var(--text-1)">🔥 热销款原款采集</h2>
-          <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">每日追踪 Temu / Shein / Etsy 热销榜 · 数据仅供选品参考</p>
+          <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">每日追踪 Temu 热销榜 · 数据仅供选品参考</p>
         </div>
         <span style="font-size:12px;color:var(--text-3);background:var(--bg-soft);padding:4px 10px;border-radius:6px">采集演示数据</span>
       </div>
@@ -1337,21 +1357,21 @@ function renderHotProducts(){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
       <div>
         <h2 style="font-size:22px;font-weight:800;margin:0;color:var(--text-1)">🔥 热销款原款采集</h2>
-        <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">每日追踪 Temu / Shein / Etsy 热销榜 · AI变体的数据来源 · 原图仅供参考不可下载</p>
+        <p style="font-size:13px;color:var(--text-3);margin:4px 0 0">每日追踪 Temu 热销榜 · AI变体的数据来源 · 原图仅供参考不可下载</p>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:12px;color:var(--text-3)">更新于 ${updatedAt ? updatedAt.slice(0,10) : '今日'}</span>
-        <span style="font-size:12px;color:var(--success);background:var(--success);color:#fff;padding:3px 10px;border-radius:6px;font-weight:600">实时数据 ${products.length}条</span>
+        <span style="font-size:12px;background:var(--success);color:#fff;padding:3px 10px;border-radius:6px;font-weight:600">实时数据 ${products.length}条</span>
       </div>
     </div>
     <!-- 选品助手风格：横向商品卡片 -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px" class="hot-products-grid">
       ${displayProducts.map((p,i)=>{
-        const platColor = platformColors[p.platform] || '#0175cc';
+        const platColor = platformColors[p.platform ? p.platform.toLowerCase() : ''] || '#0175cc';
         const price = p.price ? (typeof p.price === 'number' ? '$'+p.price.toFixed(2) : p.price) : 'N/A';
-        const sales = p.sold_count || p.sales_tip || '';
+        const sales = p.sales || p.sold_count || p.sales_tip || '';
         const rating = p.rating || '';
-        const reviews = p.review_count || '';
+        const reviews = p.reviews || p.review_count || p.reviewCount || '';
         return `<div style="background:#fff;border:1px solid var(--border-light);border-radius:12px;overflow:hidden;transition:all .2s;cursor:default" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
           <!-- 商品图片：禁止下载、禁止放大、禁止右键 -->
           <div style="position:relative;background:var(--bg-soft);aspect-ratio:1;overflow:hidden">
@@ -2041,7 +2061,11 @@ function renderDetail(){
 }
 
 function downloadAsset(id){
-  const a=ASSETS.find(x=>x.id==id);
+  // 从localStorage素材库查找（包含审核上架的新素材）
+  const assets = getAssets();
+  let a = assets.find(x=>x.id==id);
+  // 兜底：从默认数据查找
+  if(!a) a = ASSETS.find(x=>x.id==id);
   if(!a){toast('图案不存在');return;}
   // 判断是否当天更新
   const today=new Date().toISOString().split('T')[0];
@@ -2052,8 +2076,27 @@ function downloadAsset(id){
     setTimeout(()=>navigate('login'),1200);
     return;
   }
+  // 模拟下载：创建临时链接下载图片
+  if(a.image){
+    try{
+      const link = document.createElement('a');
+      link.href = a.image;
+      link.download = 'printhunt_' + (a.title || 'design').replace(/[^a-zA-Z0-9]/g,'_').substring(0,30) + '.png';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }catch(e){
+      console.warn('下载失败:', e);
+    }
+  }
+  // 更新下载次数
+  if(a.downloads !== undefined){
+    a.downloads = (a.downloads || 0) + 1;
+    saveAssets(assets);
+  }
   // 下载成功
-  toast(isToday?'下载成功（当日免费）':'下载成功，授权编号已生成');
+  toast(isToday?'✅ 下载成功（当日免费）':'✅ 下载成功，商用授权已生效');
 }
 
 /* ===== 充值 ===== */
@@ -2223,11 +2266,20 @@ function renderLogin(){
 function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  if(!email || !email.includes('@')){ alert('请输入正确的邮箱地址'); return; }
-  if(!password || password.length < 6){ alert('密码至少6位'); return; }
+  if(!email || !email.includes('@')){ toast('请输入正确的邮箱地址'); return; }
+  if(!password || password.length < 6){ toast('密码至少6位'); return; }
+  // 检查用户是否已注册
+  const users = DB.get('users', []);
+  const user = users.find(u => u.email === email);
+  if(user && user.password !== password){
+    toast('密码错误，请重试');
+    return;
+  }
   STATE.user.name = email.split('@')[0];
   STATE.user.email = email;
   STATE.user.loggedIn = true;
+  // 持久化登录状态
+  localStorage.setItem('printhunt_user', JSON.stringify(STATE.user));
   toast('登录成功，欢迎回来');
   navigate('home');
 }
@@ -2236,9 +2288,18 @@ function doRegister(){
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const password2 = document.getElementById('loginPassword2').value;
-  if(!email || !email.includes('@')){ alert('请输入正确的邮箱地址'); return; }
-  if(!password || password.length < 6){ alert('密码至少6位'); return; }
-  if(password !== password2){ alert('两次输入的密码不一致'); return; }
+  if(!email || !email.includes('@')){ toast('请输入正确的邮箱地址'); return; }
+  if(!password || password.length < 6){ toast('密码至少6位'); return; }
+  if(password !== password2){ toast('两次输入的密码不一致'); return; }
+  // 检查邮箱是否已注册
+  const users = DB.get('users', []);
+  if(users.find(u => u.email === email)){
+    toast('该邮箱已注册，请直接登录');
+    return;
+  }
+  // 保存用户数据
+  users.push({email, password, name: email.split('@')[0], createdAt: new Date().toISOString()});
+  DB.set('users', users);
   STATE.user.name = email.split('@')[0];
   STATE.user.email = email;
   STATE.user.loggedIn = true;
@@ -2248,6 +2309,9 @@ function doRegister(){
 
 function logout(){
   STATE.user.loggedIn = false;
+  STATE.user.email = '';
+  STATE.user.name = '';
+  localStorage.removeItem('printhunt_user');
   STATE.user.name = '';
   STATE.user.email = '';
   toast('已退出登录');
