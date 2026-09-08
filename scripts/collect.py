@@ -23,9 +23,10 @@ IMAGES_DIR = DATA_DIR / "images"
 # Apify Actors（Temu专用，按可靠性排序）
 # ============================================================
 TEMU_ACTORS = [
-    "apivault_labs~temu-product-scraper",      # 评分5.0，含销量/评分/评论
-    "lentic_clockss~temu-scraper",              # 多区域支持
-    "axlymxp~temu-product-scraper",             # 含sales count
+    "axlymxp~temu-product-scraper",             # 已验证可返回数据
+    "epctex~temu-scraper",                      # 高评分，支持搜索
+    "web_harvest~temu-product-scraper",         # 备选
+    "jupri~temu-scraper",                       # 备选
 ]
 
 # ============================================================
@@ -94,35 +95,54 @@ def is_pod_tshirt(title):
     return True
 
 def run_actor(actor_id, keyword, limit):
-    """运行Apify Actor采集Temu商品"""
+    """运行Apify Actor采集Temu商品，尝试多种参数格式"""
     url = f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items"
     params = {"token": APIFY_TOKEN, "timeout": 180}
-    payload = {
-        "keyword": keyword,
-        "limit": limit,
-        "country": "US",
-        "sort": "sales",  # 按销量排序
-    }
-    try:
-        resp = requests.post(url, params=params, json=payload, timeout=200)
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            print(f"  Actor {actor_id} 返回 {resp.status_code}: {resp.text[:100]}")
-            return []
-    except Exception as e:
-        print(f"  Actor {actor_id} 异常: {e}")
-        return []
+    
+    # 尝试多种参数格式（不同Actor需要不同的参数名）
+    payloads = [
+        {"keyword": keyword, "limit": limit, "country": "US", "sort": "sales"},
+        {"search": keyword, "maxItems": limit, "country": "US"},
+        {"query": keyword, "limit": limit, "countryCode": "US"},
+        {"keyword": keyword, "maxItems": limit},
+    ]
+    
+    for i, payload in enumerate(payloads):
+        try:
+            print(f"  尝试参数格式 {i+1}/{len(payloads)}: {list(payload.keys())}")
+            resp = requests.post(url, params=params, json=payload, timeout=200)
+            if resp.status_code in (200, 201):
+                data = resp.json()
+                if isinstance(data, list) and len(data) > 0:
+                    print(f"  ✓ 参数格式 {i+1} 成功，返回 {len(data)} 条")
+                    return data
+                if isinstance(data, dict):
+                    for key in ['items', 'products', 'data', 'results']:
+                        if key in data and isinstance(data[key], list) and len(data[key]) > 0:
+                            print(f"  ✓ 从 {key} 字段提取 {len(data[key])} 条")
+                            return data[key]
+                print(f"  参数格式 {i+1} 返回空数据")
+            else:
+                print(f"  参数格式 {i+1} 返回 {resp.status_code}: {resp.text[:100]}")
+        except Exception as e:
+            print(f"  参数格式 {i+1} 异常: {e}")
+    
+    print(f"  Actor {actor_id} 所有参数格式均失败")
+    return []
 
 def normalize_product(item, period):
     """标准化商品数据"""
-    title = item.get("title") or item.get("name") or ""
-    price = item.get("price") or item.get("currentPrice") or item.get("salePrice") or 0
-    sales = item.get("sales") or item.get("salesCount") or item.get("orderCount") or 0
-    rating = item.get("rating") or item.get("stars") or item.get("reviewRating") or 0
-    reviews = item.get("reviews") or item.get("reviewCount") or item.get("commentsCount") or 0
-    image = item.get("image") or item.get("mainImage") or item.get("photo") or item.get("imageUrl") or ""
-    url = item.get("url") or item.get("productUrl") or item.get("link") or ""
+    title = item.get("title") or item.get("name") or item.get("goods_name") or ""
+    price = item.get("price") or item.get("currentPrice") or item.get("salePrice") or item.get("min_price") or item.get("price_range") or 0
+    sales = item.get("sales") or item.get("salesCount") or item.get("orderCount") or item.get("sold") or item.get("sales_tip") or 0
+    rating = item.get("rating") or item.get("stars") or item.get("reviewRating") or item.get("goods_score") or 0
+    reviews = item.get("reviews") or item.get("reviewCount") or item.get("commentsCount") or item.get("comment_num_tips") or 0
+    image = item.get("image") or item.get("mainImage") or item.get("photo") or item.get("imageUrl") or item.get("goods_img") or item.get("thumb") or ""
+    url = item.get("url") or item.get("productUrl") or item.get("link") or item.get("detail_url") or ""
+    
+    # Temu商品URL拼接
+    if not url and item.get("goods_id"):
+        url = f"https://www.temu.com/search_result.html?search_key={item['goods_id']}"
 
     if isinstance(price, (int, float)):
         price_str = f"${price:.2f}"
@@ -132,7 +152,7 @@ def normalize_product(item, period):
         price_str = "$0.00"
 
     return {
-        "id": item.get("id") or item.get("productId") or "",
+        "id": item.get("id") or item.get("productId") or item.get("goods_id") or "",
         "title": title,
         "price": price_str,
         "sales": sales,
