@@ -1049,19 +1049,32 @@ async function triggerCollectWorkflow(){
 function productsToCollectItems(data){
   if(!data || !data.products) return COLLECT_ITEMS;
   return data.products.map(function(p,i){
+    // 适配多种数据结构（真实采集/模拟数据）
+    const platform = p.platform ? (typeof p.platform === 'string' ? p.platform.charAt(0).toUpperCase()+p.platform.slice(1) : 'Temu') : 'Temu';
+    const sales = p.sales || p.sales_tip || p.salesCount || '-';
+    const rating = p.rating || (p.comment ? p.comment.goods_score : null);
+    const reviewCount = p.reviews || p.reviewCount || (p.comment ? p.comment.comment_num_tips : null);
+    const price = typeof p.price === 'number' ? (p.price < 100 ? '$'+p.price.toFixed(2) : '$'+(p.price/100).toFixed(2)) : (p.price || '$0.00');
+    const period = p.period === 'weekly' || p.period === '周榜' ? '周榜' : '日榜';
+    const collectedAt = p.collectedAt ? p.collectedAt.slice(0,16).replace('T',' ') : (data.collectedAt ? data.collectedAt.slice(0,16).replace('T',' ') : (data.updated_at ? data.updated_at.slice(0,16).replace('T',' ') : '2026-09-08 08:00'));
+    const rank = p.rank || (i+1);
     return {
       id:'RC'+String(i+1).padStart(3,'0'),
-      platform:p.platform.charAt(0).toUpperCase()+p.platform.slice(1),
-      title:p.title,
-      sales:p.sales_tip || '-',
+      platform:platform,
+      title:p.title || p.name || '未命名商品',
+      sales:sales,
       trend:'+'+Math.floor(Math.random()*200+30)+'%',
-      rank:i+1, period:'日榜',
-      image:p.image, status:'待变体', variantId:null,
-      collectedAt:data.updated_at ? data.updated_at.slice(0,16).replace('T',' ') : '2026-09-05 08:00',
-      price: typeof p.price==='number' ? (p.platform==='temu' ? '$'+(p.price/100).toFixed(2) : '$'+p.price) : p.price,
-      rating:p.comment ? p.comment.goods_score : null,
-      reviewCount:p.comment ? p.comment.comment_num_tips : null,
-      url:p.url, keyword:p.keyword
+      rank:rank,
+      period:period,
+      image:p.image || p.mainImage || p.photo || '',
+      status:'待变体',
+      variantId:null,
+      collectedAt:collectedAt,
+      price:price,
+      rating:rating,
+      reviewCount:reviewCount,
+      url:p.url || p.productUrl || p.link || '',
+      keyword:p.keyword || ''
     };
   });
 }
